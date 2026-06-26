@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat — Damundjé</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg-base); }
+
+    /* ── Layout full-height ──────────────── */
+    .chat-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ─────────────────────────── */
+    .chat-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 12px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .chat-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .chat-avatar img { width:100%;height:100%;object-fit:cover; }
+
+    .chat-header-info { flex: 1; min-width: 0; }
+
+    .chat-header-name {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-header-status {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chat-header-status.online { color: var(--whatsapp); }
+
+    .chat-actions { display: flex; gap: 4px; }
+
+    /* ── Bandeau annonce ─────────────────── */
+    .listing-banner {
+      background: var(--primary-light);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .listing-banner:hover { background: var(--bg-hover); }
+
+    .listing-banner-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--bg-input);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .listing-banner-thumb img { width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm); }
+
+    .listing-banner-title {
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .listing-banner-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* ── Zone messages ───────────────────── */
+    .messages-zone {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Séparateur de date ──────────────── */
+    .date-separator {
+      text-align: center;
+      margin: 12px 0 8px;
+    }
+
+    .date-separator span {
+      background: var(--bg-input);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+
+    /* ── Bulles ──────────────────────────── */
+    .msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      animation: msgIn 0.2s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.mine {
+      flex-direction: row-reverse;
+    }
+
+    .msg-bubble-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    .msg-bubble {
+      max-width: 72%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+      word-break: break-word;
+    }
+
+    /* Message reçu */
+    .msg-row:not(.mine) .msg-bubble {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    /* Mon message */
+    .msg-row.mine .msg-bubble {
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.7;
+      justify-content: flex-end;
+    }
+
+    .msg-row:not(.mine) .msg-meta {
+      justify-content: flex-start;
+      color: var(--text-muted);
+    }
+
+    .msg-row.mine .msg-meta {
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Statut lu/envoyé */
+    .msg-status { font-size: 13px; }
+
+    /* TTL badge */
+    .ttl-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.1);
+    }
+
+    .msg-row.mine .ttl-badge { background: rgba(255,255,255,0.2); }
+
+    /* ── Indicateur "en train d'écrire" ──── */
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+    }
+
+    .typing-indicator.visible { display: flex; }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 10px 16px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typingBounce 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%           { transform: translateY(-6px); }
+    }
+
+    /* ── Zone de saisie ──────────────────── */
+    .input-zone {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .input-zone textarea {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1.5px solid transparent;
+      border-radius: 22px;
+      padding: 10px 16px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      resize: none;
+      max-height: 120px;
+      min-height: 44px;
+      line-height: 1.4;
+      transition: border-color 0.2s;
+    }
+
+    .input-zone textarea:focus { border-color: var(--border-focus); }
+    .input-zone textarea::placeholder { color: var(--text-muted); }
+
+    .btn-send-msg {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .btn-send-msg:hover { background: var(--primary-dark); transform: scale(1.05); }
+    .btn-send-msg:disabled { opacity: 0.4; transform: none; }
+
+    /* Bouton appel */
+    .btn-call {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--whatsapp);
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .btn-call:hover { background: var(--whatsapp-dark); }
+
+    /* ── Panneau TTL ─────────────────────── */
+    .ttl-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .ttl-panel.open { display: flex; }
+
+    .ttl-sheet {
+      background: var(--bg-surface);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      max-width: 680px;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .ttl-handle {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .ttl-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .ttl-desc  { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height:1.5; }
+
+    .ttl-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ttl-option {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--bg-input);
+    }
+
+    .ttl-option .days { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+    .ttl-option .label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .ttl-option.selected { border-color: var(--primary); background: var(--primary-light); }
+    .ttl-option.selected .days { color: var(--primary); }
+
+    .ttl-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 10px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Modal appel ─────────────────────── */
+    .call-modal {
+      position: fixed;
+      inset: 0;
+      background: #111;
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 60px 20px 50px;
+    }
+
+    .call-modal.open { display: flex; }
+
+    .call-top { text-align: center; }
+    .call-avatar-big {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      margin: 0 auto 20px;
+      border: 3px solid #333;
+      animation: callPulse 2s infinite;
+    }
+
+    @keyframes callPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.4); }
+      50%       { box-shadow: 0 0 0 20px rgba(37,211,102,0); }
+    }
+
+    .call-name  { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .call-status{ font-size: 15px; color: #888; }
+
+    .call-timer { font-size: 32px; font-weight: 300; color: #fff; font-variant-numeric: tabular-nums; }
+
+    .call-actions {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .call-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      transition: transform 0.15s;
+    }
+
+    .call-btn:active { transform: scale(0.92); }
+    .call-btn.mute   { background: #333; color: #fff; }
+    .call-btn.hangup { background: var(--danger); color: #fff; width: 72px; height: 72px; font-size: 28px; }
+    .call-btn.speaker{ background: #333; color: #fff; }
+
+    /* ── Skeleton ────────────────────────── */
+    .skeleton{background:linear-gradient(90deg,var(--bg-input) 25%,var(--bg-hover) 50%,var(--bg-input) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius-sm);}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  </style>
+</head>
+<body>
+
+<div class="chat-layout">
+
+  <!-- ── EN-TÊTE ────────────────────────── -->
+  <div class="chat-header" id="chat-header">
+    <button class="btn-icon" onclick="history.back()">←</button>
+
+    <div class="chat-avatar" id="chat-avatar">👤</div>
+
+    <div class="chat-header-info">
+      <div class="chat-header-name" id="chat-name">Chargement...</div>
+      <div class="chat-header-status" id="chat-status">Damundjé Chat</div>
+    </div>
+
+    <div class="chat-actions">
+      <button class="btn-icon" onclick="openCallModal()" title="Appel audio">📞</button>
+      <button class="btn-icon" onclick="openTTLPanel()" title="Durée conservation">⏱️</button>
+      <button class="btn-icon" onclick="toggleMenu()" title="Plus">⋮</button>
+    </div>
+  </div>
+
+  <!-- ── BANDEAU ANNONCE ────────────────── -->
+  <div class="listing-banner" id="listing-banner" style="display:none;"
+       onclick="goToListing()">
+    <div class="listing-banner-thumb" id="listing-thumb">🏷️</div>
+    <div>
+      <div class="listing-banner-title" id="listing-title"></div>
+      <div class="listing-banner-price" id="listing-price"></div>
+    </div>
+    <div style="margin-left:auto;color:var(--text-muted);">›</div>
+  </div>
+
+  <!-- ── MESSAGES ──────────────────────── -->
+  <div class="messages-zone" id="messages-zone">
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--text-muted);justify-content:center;">
+      <span class="spinner spinner-dark"></span>
+      <span style="font-size:13px;">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Indicateur frappe -->
+  <div class="typing-indicator" id="typing-indicator">
+    <div class="msg-bubble-avatar">👤</div>
+    <div class="typing-dots">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  </div>
+
+  <!-- ── ZONE DE SAISIE ────────────────── -->
+  <div class="input-zone">
+    <textarea
+      id="msg-input"
+      placeholder="Écrire un message..."
+      rows="1"
+    ></textarea>
+    <button class="btn-send-msg" id="btn-send" onclick="sendMessage()">➤</button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     PANNEAU TTL
+══════════════════════════════════════ -->
+<div class="ttl-panel" id="ttl-panel" onclick="handleTTLOverlay(event)">
+  <div class="ttl-sheet">
+    <div class="ttl-handle"></div>
+    <div class="ttl-title">⏱️ Durée de conservation</div>
+    <div class="ttl-desc">
+      Après combien de jours supprimer les messages <strong>lus</strong> ?<br>
+      Les messages non lus sont conservés indéfiniment.
+    </div>
+
+    <div class="ttl-options">
+      <div class="ttl-option" data-days="1" onclick="selectTTL(1, this)">
+        <div class="days">1</div>
+        <div class="label">jour</div>
+      </div>
+      <div class="ttl-option" data-days="2" onclick="selectTTL(2, this)">
+        <div class="days">2</div>
+        <div class="label">jours</div>
+      </div>
+      <div class="ttl-option selected" data-days="3" onclick="selectTTL(3, this)">
+        <div class="days">3</div>
+        <div class="label">jours</div>
+      </div>
+      <div class="ttl-option" data-days="4" onclick="selectTTL(4, this)">
+        <div class="days">4</div>
+        <div class="label">jours</div>
+      </div>
+      <div class="ttl-option" data-days="5" onclick="selectTTL(5, this)">
+        <div class="days">5</div>
+        <div class="label">jours</div>
+      </div>
+      <div class="ttl-option" data-days="6" onclick="selectTTL(6, this)">
+        <div class="days">6</div>
+        <div class="label">jours</div>
+      </div>
+      <div class="ttl-option" data-days="7" onclick="selectTTL(7, this)">
+        <div class="days">7</div>
+        <div class="label">jours MAX</div>
+      </div>
+    </div>
+
+    <div class="ttl-note">
+      ✅ Par défaut : <strong>3 jours</strong> après lecture<br>
+      Messages non lus : conservés jusqu'à lecture
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL APPEL
+══════════════════════════════════════ -->
+<div class="call-modal" id="call-modal">
+  <div class="call-top">
+    <div class="call-avatar-big" id="call-avatar">👤</div>
+    <div class="call-name" id="call-name"></div>
+    <div class="call-status" id="call-status">Appel en cours via WhatsApp...</div>
+  </div>
+
+  <div class="call-timer" id="call-timer" style="display:none;">00:00</div>
+
+  <div class="call-actions">
+    <button class="call-btn mute"    id="btn-mute"    onclick="toggleMute()"    title="Muet">🎤</button>
+    <button class="call-btn hangup"  onclick="hangUp()"                          title="Raccrocher">📵</button>
+    <button class="call-btn speaker" id="btn-speaker" onclick="toggleSpeaker()" title="Haut-parleur">🔊</button>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+
+  if (!Auth.requireAuth()) { /* redirige */ }
+
+  // ══════════════════════════════════════════
+  //  ÉTAT
+  // ══════════════════════════════════════════
+  const params      = new URLSearchParams(window.location.search);
+  const convId      = parseInt(params.get('id'));
+  const currentUser = Auth.getUser();
+
+  let conv          = null;
+  let messages      = [];
+  let currentTTL    = 3;
+  let pollInterval  = null;
+  let callTimer     = null;
+  let callSeconds   = 0;
+  let isMuted       = false;
+  let isSpeaker     = true;
+  let otherUserPhone = null;
+
+  if (!convId) window.location.href = 'conversations.html';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConversation();
+    startPolling();
+    setupTextarea();
+  });
+
+  window.addEventListener('beforeunload', () => clearInterval(pollInterval));
+
+  // ══════════════════════════════════════════
+  //  CHARGEMENT
+  // ══════════════════════════════════════════
+  async function loadConversation() {
+    try {
+      // Charge les infos de la conversation
+      const convs = await API.get('/api/conversations/');
+      conv = convs.find(c => c.id === convId);
+
+      if (!conv) {
+        Toast.error('Conversation introuvable');
+        setTimeout(() => window.location.href = 'conversations.html', 1000);
+        return;
+      }
+
+      currentTTL    = conv.ttl_days || 3;
+      otherUserPhone = conv.other_user_phone;
+
+      // Header
+      document.getElementById('chat-name').textContent =
+        conv.other_user_name || 'Utilisateur';
+
+      // Sélectionne l'option TTL courante
+      document.querySelectorAll('.ttl-option').forEach(el => {
+        el.classList.toggle('selected', parseInt(el.dataset.days) === currentTTL);
+      });
+
+      // Bandeau annonce
+      if (conv.listing_title) {
+        document.getElementById('listing-title').textContent = conv.listing_title;
+        document.getElementById('listing-banner').style.display = 'flex';
+        if (conv.listing_photo) {
+          document.getElementById('listing-thumb').innerHTML =
+            `<img src="${conv.listing_photo}" alt="">`;
+        }
+      }
+
+      // Call modal
+      document.getElementById('call-name').textContent = conv.other_user_name || 'Utilisateur';
+
+      // Charge les messages
+      await loadMessages();
+
+    } catch (err) {
+      Toast.error(err.message);
+    }
+  }
+
+  async function loadMessages(silent = false) {
+    try {
+      const data = await API.get(`/api/conversations/${convId}/messages?limit=100`);
+
+      // Ajoute seulement les nouveaux messages
+      const existingIds = new Set(messages.map(m => m.id));
+      const newMsgs     = data.filter(m => !existingIds.has(m.id));
+
+      if (newMsgs.length > 0 || messages.length === 0) {
+        messages = data;
+        renderMessages();
+      }
+
+    } catch (err) {
+      if (!silent) Toast.error(err.message);
+    }
+  }
+
+  // ══════════════════════════════════════════
+  //  RENDU DES MESSAGES
+  // ══════════════════════════════════════════
+  function renderMessages() {
+    const zone = document.getElementById('messages-zone');
+    if (!messages.length) {
+      zone.innerHTML = `
+        <div class="empty-state" style="margin-top:40px;">
+          <div class="empty-icon">👋</div>
+          <h3>Démarre la conversation</h3>
+          <p>Envoie ton premier message !</p>
+        </div>`;
+      return;
+    }
+
+    let html      = '';
+    let lastDate  = '';
+
+    messages.forEach(msg => {
+      const msgDate = new Date(msg.created_at).toLocaleDateString('fr-FR');
+      if (msgDate !== lastDate) {
+        html += `<div class="date-separator"><span>${formatDateLabel(msg.created_at)}</span></div>`;
+        lastDate = msgDate;
+      }
+
+      const isMine   = msg.is_mine || msg.sender_id === currentUser?.id;
+      const statusIcon = isMine
+        ? (msg.is_read ? '✓✓' : '✓')
+        : '';
+
+      const ttlInfo = msg.expires_at
+        ? `Expire ${Format.date(msg.expires_at)}`
+        : `${msg.ttl_days}j après lecture`;
+
+      html += `
+        <div class="msg-row ${isMine ? 'mine' : ''}">
+          ${!isMine ? `<div class="msg-bubble-avatar">
+            ${conv?.other_user_name?.[0]?.toUpperCase() || '?'}
+          </div>` : ''}
+
+          <div>
+            <div class="msg-bubble">${escapeHtml(msg.content)}</div>
+            <div class="msg-meta">
+              <span>${new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</span>
+              ${isMine ? `<span class="msg-status">${statusIcon}</span>` : ''}
+              <span class="ttl-badge" title="${ttlInfo}">⏱${msg.ttl_days}j</span>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    zone.innerHTML = html;
+    // Scroll vers le bas
+    zone.scrollTop = zone.scrollHeight;
+  }
+
+  // ══════════════════════════════════════════
+  //  ENVOYER UN MESSAGE
+  // ══════════════════════════════════════════
+  async function sendMessage() {
+    const input   = document.getElementById('msg-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    const btn = document.getElementById('btn-send');
+    btn.disabled = true;
+    input.value  = '';
+    input.style.height = 'auto';
+
+    try {
+      const msg = await API.post(`/api/conversations/${convId}/messages`, {
+        content,
+        ttl_days: currentTTL
+      });
+
+      messages.push({ ...msg, is_mine: true });
+      renderMessages();
+
+    } catch (err) {
+      Toast.error(err.message);
+      input.value = content;
+    } finally {
+      btn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // ══════════════════════════════════════════
+  //  TEXTAREA AUTO-RESIZE + ENTER
+  // ══════════════════════════════════════════
+  function setupTextarea() {
+    const input = document.getElementById('msg-input');
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+  }
+
+  // ══════════════════════════════════════════
+  //  POLLING (rafraîchit les messages)
+  // ══════════════════════════════════════════
+  function startPolling() {
+    pollInterval = setInterval(() => loadMessages(true), 3000);
+  }
+
+  // ══════════════════════════════════════════
+  //  TTL
+  // ══════════════════════════════════════════
+  function openTTLPanel() {
+    document.getElementById('ttl-panel').classList.add('open');
+  }
+
+  function closeTTLPanel() {
+    document.getElementById('ttl-panel').classList.remove('open');
+  }
+
+  function handleTTLOverlay(e) {
+    if (e.target === document.getElementById('ttl-panel')) closeTTLPanel();
+  }
+
+  async function selectTTL(days, el) {
+    document.querySelectorAll('.ttl-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    currentTTL = days;
+
+    try {
+      await API.patch(`/api/conversations/${convId}/ttl`, { ttl_days: days });
+      Toast.success(`Messages supprimés après ${days} jour(s) de lecture`);
+      closeTTLPanel();
+    } catch (err) {
+      Toast.error(err.message);
+    }
+  }
+
+  // ══════════════════════════════════════════
+  //  APPEL WHATSAPP
+  //  (Appel via WhatsApp en attendant WebRTC)
+  // ══════════════════════════════════════════
+  function openCallModal() {
+    if (!otherUserPhone) {
+      Toast.warning('Numéro indisponible — utilise WhatsApp directement');
+      return;
+    }
+
+    // Ouvre WhatsApp pour l'appel
+    const phone = otherUserPhone.replace(/^\+/, '');
+    const waUrl = `https://wa.me/${phone}`;
+
+    // Affiche le modal pendant 2 secondes puis redirige
+    document.getElementById('call-modal').classList.add('open');
+    document.getElementById('call-status').textContent = 'Ouverture WhatsApp...';
+
+    setTimeout(() => {
+      window.open(waUrl, '_blank');
+      hangUp();
+    }, 1500);
+  }
+
+  function hangUp() {
+    document.getElementById('call-modal').classList.remove('open');
+    clearInterval(callTimer);
+    callSeconds = 0;
+  }
+
+  function toggleMute() {
+    isMuted = !isMuted;
+    document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🎤';
+    Toast.success(isMuted ? 'Micro coupé' : 'Micro activé');
+  }
+
+  function toggleSpeaker() {
+    isSpeaker = !isSpeaker;
+    document.getElementById('btn-speaker').textContent = isSpeaker ? '🔊' : '🔈';
+  }
+
+  // ══════════════════════════════════════════
+  //  NAVIGATION
+  // ══════════════════════════════════════════
+  function goToListing() {
+    if (conv?.listing_id) window.location.href = `listing.html?id=${conv.listing_id}`;
+  }
+
+  function toggleMenu() {
+    // Menu contextuel simple
+    const actions = [
+      { label: '🗑️ Supprimer la conversation', action: deleteConv },
+      { label: '📞 Appeler sur WhatsApp', action: openCallModal },
+    ];
+    if (confirm('Supprimer cette conversation ?')) deleteConv();
+  }
+
+  async function deleteConv() {
+    try {
+      await API.delete(`/api/conversations/${convId}`);
+      Toast.success('Conversation supprimée');
+      setTimeout(() => window.location.href = 'conversations.html', 600);
+    } catch (err) {
+      Toast.error(err.message);
+    }
+  }
+
+  // ══════════════════════════════════════════
+  //  UTILITAIRES
+  // ══════════════════════════════════════════
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+  }
+
+  function formatDateLabel(isoString) {
+    const d   = new Date(isoString);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 86400000);
+    if (diff === 0) return "Aujourd'hui";
+    if (diff === 1) return "Hier";
+    return d.toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+  }
+
+</script>
+</body>
+</html>

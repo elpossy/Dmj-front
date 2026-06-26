@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Damundjé — Le marché de chez nous</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    /* ══════════════════════════════════════
+       HERO — Section d'accueil (non connecté)
+    ══════════════════════════════════════ */
+    .hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0284c7 100%);
+      padding: 48px 20px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.07) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    /* Bulles décoratives animées */
+    .hero-bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      animation: floatBubble linear infinite;
+    }
+
+    @keyframes floatBubble {
+      0%   { transform: translateY(0) scale(1); opacity: 0.4; }
+      50%  { transform: translateY(-30px) scale(1.05); opacity: 0.6; }
+      100% { transform: translateY(0) scale(1); opacity: 0.4; }
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      letter-spacing: 0.5px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .hero-title {
+      font-size: clamp(28px, 7vw, 46px);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      animation: fadeDown 0.7s ease 0.1s both;
+    }
+
+    .hero-title .accent { color: #86efac; }
+
+    .hero-subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      max-width: 420px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+      animation: fadeDown 0.7s ease 0.2s both;
+    }
+
+    .hero-search {
+      display: flex;
+      gap: 8px;
+      max-width: 520px;
+      margin: 0 auto;
+      animation: fadeDown 0.7s ease 0.3s both;
+    }
+
+    .hero-search input {
+      flex: 1;
+      height: 50px;
+      background: rgba(255,255,255,0.95);
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 0 18px;
+      font-family: var(--font);
+      font-size: 15px;
+      color: #111;
+      outline: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .hero-search input::placeholder { color: #888; }
+
+    .hero-search button {
+      height: 50px;
+      padding: 0 22px;
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      border-radius: var(--radius-lg);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      transition: transform 0.15s;
+    }
+
+    .hero-search button:hover { transform: translateY(-1px); }
+
+    /* Stats héro */
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 32px;
+      animation: fadeDown 0.7s ease 0.4s both;
+    }
+
+    .hero-stat { text-align: center; color: rgba(255,255,255,0.85); }
+    .hero-stat-value { font-size: 22px; font-weight: 800; color: #fff; display: block; }
+    .hero-stat-label { font-size: 12px; margin-top: 2px; }
+
+    /* ══════════════════════════════════════
+       ANIMATIONS GLOBALES
+    ══════════════════════════════════════ */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Cartes qui apparaissent en cascade */
+    .listing-card {
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .listing-card:nth-child(1) { animation-delay: 0.05s; }
+    .listing-card:nth-child(2) { animation-delay: 0.10s; }
+    .listing-card:nth-child(3) { animation-delay: 0.15s; }
+    .listing-card:nth-child(4) { animation-delay: 0.20s; }
+    .listing-card:nth-child(5) { animation-delay: 0.25s; }
+    .listing-card:nth-child(6) { animation-delay: 0.30s; }
+    .listing-card:nth-child(7) { animation-delay: 0.35s; }
+    .listing-card:nth-child(8) { animation-delay: 0.40s; }
+
+    /* ══════════════════════════════════════
+       BANDEAU FILTRES ACTIFS
+    ══════════════════════════════════════ */
+    .active-filters {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+
+    .active-filters.visible { display: flex; }
+
+    .filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .filter-tag button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ══════════════════════════════════════
+       SECTION RECOMMANDATIONS
+    ══════════════════════════════════════ */
+    .reco-section {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      margin: 12px 16px;
+      padding: 16px 0 4px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .reco-header {
+      padding: 0 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .reco-title {
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reco-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Scroll horizontal pour les recos */
+    .reco-scroll {
+      display: flex;
+      gap: 12px;
+      padding: 0 16px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .reco-scroll::-webkit-scrollbar { display: none; }
+
+    .reco-scroll .listing-card {
+      flex-shrink: 0;
+      width: 160px;
+    }
+
+    /* ══════════════════════════════════════
+       BARRE DE RECHERCHE (navbar connecté)
+    ══════════════════════════════════════ */
+    .search-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: none;
+      z-index: 200;
+    }
+
+    .search-dropdown.visible { display: block; }
+
+    .search-suggestion {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 14px;
+    }
+
+    .search-suggestion:hover { background: var(--bg-hover); }
+    .search-suggestion .icon { color: var(--text-muted); font-size: 16px; }
+
+    /* ══════════════════════════════════════
+       LOADING SKELETON
+    ══════════════════════════════════════ */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-input) 25%, var(--bg-hover) 50%, var(--bg-input) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .skeleton-photo {
+      aspect-ratio: 4/3;
+      width: 100%;
+    }
+
+    .skeleton-body { padding: 12px; }
+    .skeleton-line { height: 14px; margin-bottom: 8px; border-radius: 4px; }
+    .skeleton-line.short { width: 60%; }
+    .skeleton-line.price { height: 18px; width: 50%; }
+
+    /* ══════════════════════════════════════
+       BOUTON FLOTTANT "Publier" (desktop)
+    ══════════════════════════════════════ */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-xl);
+      padding: 14px 22px;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 90;
+      text-decoration: none;
+    }
+
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(37,99,235,0.5);
+    }
+
+    @media (min-width: 768px) {
+      .fab { display: flex; }
+    }
+
+    /* ══════════════════════════════════════
+       PRIX FILTRE — modal sur mobile
+    ══════════════════════════════════════ */
+    .filter-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+    }
+
+    .filter-modal-overlay.open { display: flex; }
+
+    .filter-modal {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 24px 20px 36px;
+      width: 100%;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .filter-modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .filter-modal-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    /* ══════════════════════════════════════
+       BADGE NOMBRE DE RÉSULTATS
+    ══════════════════════════════════════ */
+    .results-count {
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════
+       INDICATEUR DE SCROLL INFINI
+    ══════════════════════════════════════ */
+    .load-more-indicator {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+<a href="index.html" class="navbar-brand">
+  <img src="assets/logo-damundje.svg" alt="Damundjé"
+       style="height:36px;width:50px;border-radius:8px;vertical-align:middle;">Damundjé <span>.</span>
+ </a>
+<a href="conversations.html" class="btn-icon" id="nav-messages-btn"
+   style="display:none;margin-left:auto;" title="Messages">💬</a>
+<a href="dob_shop.html" class="btn-icon" id="nav-dob-btn"
+   style="display:none;font-size:13px;font-weight:700;gap:4px;align-items:center;"
+   title="Mes DOB">
+  <svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:middle;">
+    <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+    <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+  </svg>
+  <span id="nav-dob-balance">—</span>
+</a>
+    <!-- Barre de recherche (visible seulement si connecté) -->
+    <div class="search-bar" id="nav-search" style="display:none; position:relative;">
+      <span class="icon">🔍</span>
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Rechercher un article..."
+        autocomplete="off"
+      >
+      <div class="search-dropdown" id="search-dropdown"></div>
+    </div>
+
+    <div class="navbar-actions" id="navbar-actions">
+      <!-- rempli par JS selon l'état de connexion -->
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       HERO (visible seulement si NON connecté)
+  ══════════════════════════════════════ -->
+  <section class="hero" id="hero-section" style="display:none;">
+
+    <!-- Bulles décoratives -->
+    <div class="hero-bubble" style="width:200px;height:200px;top:-60px;left:-60px;animation-duration:8s;"></div>
+    <div class="hero-bubble" style="width:120px;height:120px;top:20px;right:40px;animation-duration:6s;animation-delay:2s;"></div>
+    <div class="hero-bubble" style="width:80px;height:80px;bottom:30px;left:30%;animation-duration:7s;animation-delay:1s;"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">🛒 La marketplace de chez nous</div>
+      <h1 class="hero-title">
+        Achète, vends,<br>
+        <span class="accent">connecte-toi.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Des milliers d'articles près de chez toi.
+        Discute directement sur WhatsApp, en toute simplicité.
+      </p>
+
+      <div class="hero-search">
+        <input
+          type="text"
+          id="hero-search-input"
+          placeholder="Que cherches-tu ? Ex: iPhone, vélo, canapé..."
+        >
+        <button onclick="heroSearch()">Chercher</button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-listings">—</span>
+          <span class="hero-stat-label">Annonces</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-cities">—</span>
+          <span class="hero-stat-label">Villes</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-categories">12</span>
+          <span class="hero-stat-label">Catégories</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       BARRE CATÉGORIES
+  ══════════════════════════════════════ -->
+  <div class="categories-bar" id="categories-bar"></div>
+
+  <!-- ══════════════════════════════════════
+       BARRE FILTRES PRIX
+  ══════════════════════════════════════ -->
+  <div class="filters-bar">
+    <span class="filter-label">Prix :</span>
+    <div class="price-range">
+      <input type="number" id="min-price" placeholder="Min" min="0">
+      <span>—</span>
+      <input type="number" id="max-price" placeholder="Max" min="0">
+      <button class="btn btn-sm btn-outline" onclick="applyFilters()">OK</button>
+    </div>
+
+    <select class="form-select" id="sort-select" style="width:auto;height:34px;padding:4px 32px 4px 10px;font-size:13px;">
+      <option value="recent">Plus récents</option>
+      <option value="price_asc">Prix ↑</option>
+      <option value="price_desc">Prix ↓</option>
+      <option value="popular">Populaires</option>
+    </select>
+
+    <button class="btn btn-sm btn-ghost" id="btn-reset-filters" style="display:none" onclick="resetFilters()">
+      ✕ Réinitialiser
+    </button>
+  </div>
+
+  <!-- Filtres actifs affichés en chips -->
+  <div class="active-filters" id="active-filters"></div>
+
+  <!-- Nombre de résultats -->
+  <div class="results-count" id="results-count" style="display:none;"></div>
+
+  <!-- ══════════════════════════════════════
+       SECTION RECOMMANDATIONS (connecté)
+  ══════════════════════════════════════ -->
+  <div id="reco-section" style="display:none;">
+    <div class="reco-section">
+      <div class="reco-header">
+        <div>
+          <div class="reco-title">✨ Pour toi</div>
+          <div class="reco-subtitle">Basé sur tes consultations</div>
+        </div>
+      </div>
+      <div class="reco-scroll" id="reco-grid">
+        <!-- Rempli par JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TITRE SECTION PRINCIPALE
+  ══════════════════════════════════════ -->
+  <div class="section-title" id="main-section-title">
+    <span>Toutes les annonces</span>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       GRILLE PRINCIPALE
+  ══════════════════════════════════════ -->
+  <div class="listings-grid" id="main-grid">
+    <!-- Skeletons de chargement -->
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-photo"></div><div class="skeleton-body"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line price"></div><div class="skeleton skeleton-line short"></div></div></div>
+  </div>
+
+  <!-- Indicateur chargement infini -->
+  <div class="load-more-indicator" id="load-more" style="display:none;">
+    <span class="spinner spinner-dark"></span>
+  </div>
+  <div id="end-of-feed" style="display:none;" class="load-more-indicator">
+    ✅ Tu as tout vu !
+  </div>
+
+  <!-- ══════════════════════════════════════
+       BOTTOM NAV (mobile)
+  ══════════════════════════════════════ -->
+  <nav class="bottom-nav has-bottom-nav" id="bottom-nav" style="display:none;">
+    <button class="bottom-nav-item active" onclick="goTo('index.html')">
+      <span class="nav-icon">🏠</span> Accueil
+    </button>
+    <button class="bottom-nav-item" onclick="goTo('conversations.html')">
+      <span class="nav-icon">💬</span> Messages
+    </button>
+    <button class="bottom-nav-item" onclick="goTo('index.html?tab=favorites')">
+      <span class="nav-icon">❤️</span> Favoris
+    </button>
+    <button class="bottom-nav-publish" onclick="goTo('create.html')" aria-label="Publier">
+      ＋
+    </button>
+    <button class="bottom-nav-item" onclick="goTo('index.html?tab=search')">
+      <span class="nav-icon">🔍</span> Chercher
+    </button>
+    <button class="bottom-nav-item" onclick="goTo('profile.html')">
+      <span class="nav-icon">👤</span> Profil
+    </button>
+  </nav>
+
+  <!-- Bouton flottant desktop -->
+  <a href="create.html" class="fab" id="fab" style="display:none;">
+    ＋ Publier une annonce
+  </a>
+
+  <!-- ══════════════════════════════════════
+       MODAL FILTRE (mobile)
+  ══════════════════════════════════════ -->
+  <div class="filter-modal-overlay" id="filter-modal" onclick="closeFilterModal(event)">
+    <div class="filter-modal">
+      <div class="filter-modal-handle"></div>
+      <div class="filter-modal-title">Filtrer les annonces</div>
+      <!-- contenu identique aux filtres barre -->
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+  // ════════════════════════════════════════════════
+  //  ÉTAT GLOBAL
+  // ════════════════════════════════════════════════
+  const state = {
+    listings:      [],
+    page:          0,
+    pageSize:      20,
+    isLoading:     false,
+    hasMore:       true,
+    selectedCategory: null,
+    searchQuery:   '',
+    minPrice:      null,
+    maxPrice:      null,
+    sortBy:        'recent',
+    isLoggedIn:    Auth.isLoggedIn(),
+  };
+
+  const CATEGORIES = [
+    { id: null,  slug: 'all',          label: 'Tout',             icon: '🛍️' },
+    { id: 1,     slug: 'electronique', label: 'Électronique',     icon: '📱' },
+    { id: 2,     slug: 'vetements',    label: 'Vêtements',        icon: '👕' },
+    { id: 3,     slug: 'maison',       label: 'Maison',           icon: '🏠' },
+    { id: 4,     slug: 'vehicules',    label: 'Véhicules',        icon: '🚗' },
+    { id: 5,     slug: 'immobilier',   label: 'Immobilier',       icon: '🏘️' },
+    { id: 6,     slug: 'emploi',       label: 'Services',         icon: '💼' },
+    { id: 7,     slug: 'alimentaire',  label: 'Alimentation',     icon: '🥘' },
+    { id: 8,     slug: 'sport',        label: 'Sport',            icon: '⚽' },
+    { id: 9,     slug: 'sante',        label: 'Santé & Beauté',   icon: '💊' },
+    { id: 10,    slug: 'animaux',      label: 'Animaux',          icon: '🐾' },
+    { id: 11,    slug: 'livres',       label: 'Formation',        icon: '📚' },
+    { id: 12,    slug: 'autre',        label: 'Autre',            icon: '📦' },
+  ];
+
+  // ════════════════════════════════════════════════
+  //  INITIALISATION
+  // ════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    renderNavbar();
+    renderCategories();
+    setupSearch();
+    setupSortFilter();
+    setupInfiniteScroll();
+    loadListings(true);
+
+    if (state.isLoggedIn) {
+      loadRecommendations();
+    }
+  });
+    // ════════════════════════════════════════════════
+  //  STATS HÉRO (non connecté)
+  // ════════════════════════════════════════════════
+  async function loadHeroStats() {
+    try {
+      const data = await API.get('/api/listings/?limit=1');
+      // On affiche juste un chiffre sympa pour l'instant
+      animateCounter('stat-listings', 0, 248, 1200);
+      animateCounter('stat-cities', 0, 34, 1000);
+    } catch { /* silencieux */ }
+  }
+  
+        // ════════════════════════════════════════════════
+  //  SOLDE DOB DANS LA NAVBAR
+  // ════════════════════════════════════════════════
+  async function loadDobBalance() {
+    try {
+      const data = await API.get('/api/dob/balance');
+      document.getElementById('nav-dob-balance').textContent = data.balance;
+    } catch { /* silencieux si non connecté */ }
+
+  // ════════════════════════════════════════════════
+  //  NAVBAR
+  // ════════════════════════════════════════════════
+  function renderNavbar() {
+    const actionsEl = document.getElementById('navbar-actions');
+
+    if (state.isLoggedIn) {
+      document.getElementById('nav-search').style.display = 'flex';
+      document.getElementById('bottom-nav').style.display = 'flex';
+      document.getElementById('hero-section').style.display = 'none';
+      document.getElementById('fab').style.display = 'flex';
+      document.body.classList.add('has-bottom-nav');
+
+      actionsEl.innerHTML = `
+        <a href="create.html" class="btn btn-primary btn-sm" style="display:none;" id="nav-publish">
+          + Publier
+        </a>
+        <a href="profile.html" class="btn-icon" title="Mon profil">👤</a>
+      `;
+
+      // Affiche le bouton "Publier" dans la navbar sur desktop
+      if (window.innerWidth >= 768) {
+        document.getElementById('nav-publish').style.display = 'flex';
+      }
+
+    } else {
+      document.getElementById('nav-search').style.display = 'none';
+      document.getElementById('nav-messages-btn').style.display = 'flex';
+      document.getElementById('nav-dob-btn').style.display = 'flex';
+      loadDobBalance();
+      document.getElementById('hero-section').style.display = 'block';
+      document.getElementById('bottom-nav').style.display = 'none';
+      document.getElementById('reco-section').style.display = 'none';
+
+      actionsEl.innerHTML = `
+        <a href="login.html" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="login.html" class="btn btn-primary btn-sm">Publier</a>
+      `;
+      loadDobBalance
+  }
+      
+
+      // Compte les annonces pour les stats héro
+      loadHeroStats();
+    }
+  }
+
+
+
+  function animateCounter(id, from, to, duration) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const start = performance.now();
+    function update(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      el.textContent = Math.round(from + (to - from) * eased).toLocaleString('fr-FR');
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  // ════════════════════════════════════════════════
+  //  CATÉGORIES
+  // ════════════════════════════════════════════════
+  function renderCategories() {
+    const bar = document.getElementById('categories-bar');
+    bar.innerHTML = CATEGORIES.map(cat => `
+      <button
+        class="category-chip ${state.selectedCategory === cat.id ? 'active' : ''}"
+        onclick="selectCategory(${cat.id === null ? 'null' : cat.id})"
+      >
+        ${cat.icon} ${cat.label}
+      </button>
+    `).join('');
+  }
+
+  function selectCategory(id) {
+    state.selectedCategory = id;
+    renderCategories();
+    resetAndReload();
+
+    // Met à jour le titre de section
+    const cat = CATEGORIES.find(c => c.id === id);
+    document.getElementById('main-section-title').querySelector('span').textContent =
+      id === null ? 'Toutes les annonces' : `${cat.icon} ${cat.label}`;
+  }
+
+  // ════════════════════════════════════════════════
+  //  CHARGEMENT DES ANNONCES
+  // ════════════════════════════════════════════════
+  async function loadListings(reset = false) {
+    if (state.isLoading || (!state.hasMore && !reset)) return;
+    state.isLoading = true;
+
+    if (reset) {
+      state.page = 0;
+      state.hasMore = true;
+      document.getElementById('main-grid').innerHTML = renderSkeletons(6);
+      document.getElementById('end-of-feed').style.display = 'none';
+      document.getElementById('results-count').style.display = 'none';
+    } else {
+      document.getElementById('load-more').style.display = 'block';
+    }
+
+    try {
+      // Construction de l'URL de recherche ou listing
+      let url;
+
+      if (state.searchQuery) {
+        url = `/api/search/?q=${encodeURIComponent(state.searchQuery)}&skip=${state.page * state.pageSize}&limit=${state.pageSize}&sort_by=${state.sortBy}`;
+        if (state.selectedCategory) url += `&category_id=${state.selectedCategory}`;
+        if (state.minPrice !== null) url += `&min_price=${state.minPrice}`;
+        if (state.maxPrice !== null) url += `&max_price=${state.maxPrice}`;
+      } else {
+        url = `/api/listings/?skip=${state.page * state.pageSize}&limit=${state.pageSize}`;
+        if (state.selectedCategory) url += `&category_id=${state.selectedCategory}`;
+        if (state.minPrice !== null) url += `&min_price=${state.minPrice}`;
+        if (state.maxPrice !== null) url += `&max_price=${state.maxPrice}`;
+      }
+
+      const data = await API.get(url);
+
+      if (reset) {
+        state.listings = data;
+        const grid = document.getElementById('main-grid');
+        if (data.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+              <div class="empty-icon">🔍</div>
+              <h3>Aucune annonce trouvée</h3>
+              <p>Essaie d'autres mots-clés ou élargis les filtres.</p>
+            </div>`;
+        } else {
+          grid.innerHTML = data.map(l => renderListingCard(l)).join('');
+          document.getElementById('results-count').style.display = 'block';
+          document.getElementById('results-count').textContent =
+            `${data.length}+ annonce${data.length > 1 ? 's' : ''}`;
+        }
+      } else {
+        state.listings = [...state.listings, ...data];
+        if (data.length > 0) {
+          document.getElementById('main-grid').insertAdjacentHTML('beforeend',
+            data.map(l => renderListingCard(l)).join(''));
+        }
+      }
+
+      if (data.length < state.pageSize) {
+        state.hasMore = false;
+        document.getElementById('load-more').style.display = 'none';
+        if (state.listings.length > 0) {
+          document.getElementById('end-of-feed').style.display = 'block';
+        }
+      } else {
+        state.page++;
+      }
+
+      // Enregistrer les vues pour le ML
+      if (state.isLoggedIn && data.length > 0) {
+        data.slice(0, 3).forEach(l => trackEvent(l.id, 'view'));
+      }
+
+    } catch (err) {
+      document.getElementById('main-grid').innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">⚠️</div>
+          <h3>Impossible de charger les annonces</h3>
+          <p>${err.message}</p>
+          <button class="btn btn-outline" onclick="loadListings(true)">Réessayer</button>
+        </div>`;
+    } finally {
+      state.isLoading = false;
+      document.getElementById('load-more').style.display = 'none';
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  //  RECOMMANDATIONS
+  // ════════════════════════════════════════════════
+  async function loadRecommendations() {
+    try {
+      const data = await API.get('/api/recommendations/?limit=10');
+      if (!data || data.length === 0) return;
+
+      document.getElementById('reco-section').style.display = 'block';
+      document.getElementById('reco-grid').innerHTML = data.map(l => renderListingCard(l)).join('');
+    } catch { /* silencieux */ }
+  }
+
+  // ════════════════════════════════════════════════
+  //  RECHERCHE
+  // ════════════════════════════════════════════════
+  function setupSearch() {
+    // Barre de recherche dans la navbar (connecté)
+    const input    = document.getElementById('search-input');
+    const dropdown = document.getElementById('search-dropdown');
+    let debounceTimer;
+
+    if (input) {
+      input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const q = input.value.trim();
+        state.searchQuery = q;
+
+        debounceTimer = setTimeout(() => {
+          resetAndReload();
+          if (q.length > 1) showSearchSuggestions(q);
+          else dropdown.classList.remove('visible');
+        }, 350);
+      });
+
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          dropdown.classList.remove('visible');
+          resetAndReload();
+        }
+        if (e.key === 'Escape') {
+          dropdown.classList.remove('visible');
+        }
+      });
+
+      document.addEventListener('click', e => {
+        if (!input.closest('.search-bar').contains(e.target)) {
+          dropdown.classList.remove('visible');
+        }
+      });
+    }
+  }
+
+  async function showSearchSuggestions(q) {
+    const dropdown = document.getElementById('search-dropdown');
+    try {
+      const data = await API.get(`/api/search/?q=${encodeURIComponent(q)}&limit=4`);
+      if (!data.length) { dropdown.classList.remove('visible'); return; }
+
+      dropdown.innerHTML = data.map(l => `
+        <div class="search-suggestion" onclick="window.location.href='listing.html?id=${l.id}'">
+          <span class="icon">🔍</span>
+          <div>
+            <div style="font-weight:600;">${l.title}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${Format.price(l.price, l.currency)}</div>
+          </div>
+        </div>
+      `).join('');
+      dropdown.classList.add('visible');
+    } catch {
+      dropdown.classList.remove('visible');
+    }
+  }
+
+  // Recherche depuis le héro (non connecté)
+  function heroSearch() {
+    const q = document.getElementById('hero-search-input').value.trim();
+    if (q) window.location.href = `index.html?q=${encodeURIComponent(q)}`;
+  }
+
+  document.getElementById('hero-search-input')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') heroSearch();
+  });
+
+  // Paramètre q dans l'URL (venant du héro)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('q')) {
+    state.searchQuery = urlParams.get('q');
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = state.searchQuery;
+  }
+
+  // ════════════════════════════════════════════════
+  //  FILTRES
+  // ════════════════════════════════════════════════
+  function setupSortFilter() {
+    document.getElementById('sort-select').addEventListener('change', e => {
+      state.sortBy = e.target.value;
+      resetAndReload();
+    });
+  }
+
+  function applyFilters() {
+    const min = document.getElementById('min-price').value;
+    const max = document.getElementById('max-price').value;
+    state.minPrice = min ? parseFloat(min) : null;
+    state.maxPrice = max ? parseFloat(max) : null;
+
+    // Affiche les filtres actifs
+    renderActiveFilters();
+    resetAndReload();
+
+    const hasFilter = min || max;
+    document.getElementById('btn-reset-filters').style.display = hasFilter ? 'inline-flex' : 'none';
+  }
+
+  function renderActiveFilters() {
+    const bar = document.getElementById('active-filters');
+    const tags = [];
+
+    if (state.minPrice !== null) {
+      tags.push(`<div class="filter-tag">Min ${Format.price(state.minPrice, 'XOF')} <button onclick="clearMinPrice()">✕</button></div>`);
+    }
+    if (state.maxPrice !== null) {
+      tags.push(`<div class="filter-tag">Max ${Format.price(state.maxPrice, 'XOF')} <button onclick="clearMaxPrice()">✕</button></div>`);
+    }
+
+    bar.innerHTML = tags.join('');
+    bar.classList.toggle('visible', tags.length > 0);
+  }
+
+  function clearMinPrice() {
+    state.minPrice = null;
+    document.getElementById('min-price').value = '';
+    renderActiveFilters();
+    resetAndReload();
+  }
+
+  function clearMaxPrice() {
+    state.maxPrice = null;
+    document.getElementById('max-price').value = '';
+    renderActiveFilters();
+    resetAndReload();
+  }
+
+  function resetFilters() {
+    state.minPrice = null;
+    state.maxPrice = null;
+    state.searchQuery = '';
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    if (document.getElementById('search-input'))
+      document.getElementById('search-input').value = '';
+    renderActiveFilters();
+    document.getElementById('btn-reset-filters').style.display = 'none';
+    resetAndReload();
+  }
+
+  // ════════════════════════════════════════════════
+  //  SCROLL INFINI
+  // ════════════════════════════════════════════════
+  function setupInfiniteScroll() {
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && state.hasMore && !state.isLoading) {
+        loadListings(false);
+      }
+    }, { rootMargin: '200px' });
+
+    observer.observe(document.getElementById('load-more'));
+  }
+
+  // ════════════════════════════════════════════════
+  //  UTILITAIRES
+  // ════════════════════════════════════════════════
+  function resetAndReload() {
+    state.page = 0;
+    state.hasMore = true;
+    loadListings(true);
+  }
+
+  function goTo(url) { window.location.href = url; }
+
+  function renderSkeletons(n) {
+    return Array(n).fill(`
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-photo"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line price"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  function closeFilterModal(e) {
+    if (e.target === document.getElementById('filter-modal')) {
+      document.getElementById('filter-modal').classList.remove('open');
+    }
+  }
+  </script>
+</body>
+</html>

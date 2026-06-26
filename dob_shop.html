@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOB — Damundjé</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background: var(--bg-base); padding-bottom: 30px; }
+
+    /* ── DOB Symbol SVG inline ──────────── */
+    .dob-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Header ─────────────────────────── */
+    .dob-header {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      padding: 32px 20px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dob-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 70%);
+    }
+
+    .dob-header-content { position: relative; z-index: 1; }
+
+    .dob-big-symbol {
+      margin: 0 auto 16px;
+      animation: rotateSlow 20s linear infinite;
+    }
+
+    @keyframes rotateSlow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .dob-balance-display {
+      font-size: 48px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .dob-balance-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* ── Section ─────────────────────────── */
+    .section { padding: 20px 16px 0; }
+
+    .section-head {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Packs ──────────────────────────── */
+    .pack-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .pack-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pack-card.available:hover {
+      border-color: #fff;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .pack-card.unavailable {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .pack-card.free-now {
+      border-color: var(--whatsapp);
+      background: linear-gradient(135deg, #052e16 0%, var(--bg-surface) 100%);
+    }
+
+    @media (prefers-color-scheme: light) {
+      .pack-card.free-now {
+        background: linear-gradient(135deg, #f0fdf4 0%, var(--bg-surface) 100%);
+      }
+    }
+
+    .free-badge {
+      position: absolute;
+      top: 10px;
+      right: -18px;
+      background: var(--whatsapp);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 24px;
+      transform: rotate(35deg);
+      letter-spacing: 0.5px;
+    }
+
+    .soon-badge {
+      position: absolute;
+      top: 10px;
+      right: -18px;
+      background: var(--text-muted);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 24px;
+      transform: rotate(35deg);
+    }
+
+    .pack-dob {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .pack-label { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .pack-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .pack-card.free-now .pack-price { color: var(--whatsapp); }
+
+    /* ── Tarification ───────────────────── */
+    .pricing-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+
+    .pricing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .pricing-row:last-child { border-bottom: none; }
+
+    .pricing-row .label { color: var(--text-secondary); }
+    .pricing-row .cost  { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+    /* ── Historique ─────────────────────── */
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .history-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .history-icon.credit  { background: #dcfce7; }
+    .history-icon.debit   { background: #fee2e2; }
+
+    @media (prefers-color-scheme: dark) {
+      .history-icon.credit { background: #052e16; }
+      .history-icon.debit  { background: #450a0a; }
+    }
+
+    .history-amount {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .history-amount.credit { color: var(--success); }
+    .history-amount.debit  { color: var(--danger); }
+
+    /* ── Modal confirmation achat ───────── */
+    .purchase-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .purchase-overlay.open { display: flex; }
+
+    .purchase-sheet {
+      background: var(--bg-surface);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 40px;
+      width: 100%;
+      max-width: 520px;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .purchase-handle {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .purchase-dob-preview {
+      text-align: center;
+      padding: 20px;
+      background: var(--bg-input);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+    }
+
+    .purchase-dob-amount {
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .gift-message {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      font-size: 14px;
+      color: #15803d;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .gift-message { background: #052e16; border-color: #166534; color: #4ade80; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── En-tête ────────────────────────── -->
+  <div style="background:var(--bg-surface);border-bottom:1px solid var(--border);
+              padding:0 16px;height:56px;display:flex;align-items:center;gap:12px;
+              position:sticky;top:0;z-index:50;">
+    <button class="btn-icon" onclick="history.back()">←</button>
+    <div style="font-size:18px;font-weight:800;flex:1;">Mes DOB</div>
+  </div>
+
+  <!-- ── Bandeau solde ──────────────────── -->
+  <div class="dob-header">
+    <div class="dob-header-content">
+
+      <!-- Symbole DOB animé -->
+      <svg class="dob-big-symbol" width="80" height="80" viewBox="0 0 80 80">
+        <rect width="80" height="80" rx="40" fill="#0a0a0a"/>
+        <circle cx="40" cy="40" r="28" fill="none" stroke="white" stroke-width="5"/>
+        <circle cx="40" cy="40" r="18" fill="none" stroke="white" stroke-width="4"/>
+        <circle cx="40" cy="40" r="9"  fill="none" stroke="white" stroke-width="3"/>
+      </svg>
+
+      <div class="dob-balance-display">
+        <span id="balance-display">—</span>
+        <span style="font-size:24px;opacity:0.6">DOB</span>
+      </div>
+      <div class="dob-balance-label">Ton solde actuel</div>
+    </div>
+  </div>
+
+  <!-- ── Tarification ───────────────────── -->
+  <div class="section">
+    <div class="section-head">💰 Tarification des publications</div>
+    <div class="pricing-card">
+      <div class="pricing-row">
+        <span class="label">Publication de base</span>
+        <span class="cost">
+          3
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+            <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+          </svg>
+          DOB
+        </span>
+      </div>
+      <div class="pricing-row">
+        <span class="label">1–5 photos</span>
+        <span class="cost" style="color:var(--success);">Inclus ✓</span>
+      </div>
+      <div class="pricing-row">
+        <span class="label">6–10 photos</span>
+        <span class="cost">
+          +1
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+            <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+          </svg>
+          DOB
+        </span>
+      </div>
+      <div class="pricing-row">
+        <span class="label">11–15 photos</span>
+        <span class="cost">
+          +2
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+            <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+          </svg>
+          DOB
+        </span>
+      </div>
+      <div class="pricing-row">
+        <span class="label">Chaque vidéo</span>
+        <span class="cost">
+          +1
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+            <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+          </svg>
+          DOB / vidéo
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Packs ──────────────────────────── -->
+  <div class="section" style="margin-top:20px;">
+    <div class="section-head">🛒 Acheter des DOB</div>
+    <div class="pack-grid" id="pack-grid">
+      <!-- Rempli par JS -->
+    </div>
+  </div>
+
+  <!-- ── Historique ─────────────────────── -->
+  <div class="section" style="margin-top:20px;padding-bottom:30px;">
+    <div class="section-head">📋 Historique</div>
+    <div style="background:var(--bg-surface);border:1px solid var(--border);
+                border-radius:var(--radius-xl);padding:0 16px;" id="history-list">
+      <div class="loading-screen" style="height:80px;">
+        <span class="spinner spinner-dark"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       MODAL CONFIRMATION ACHAT
+  ══════════════════════════════════════ -->
+  <div class="purchase-overlay" id="purchase-overlay"
+       onclick="handlePurchaseOverlay(event)">
+    <div class="purchase-sheet" id="purchase-sheet">
+      <div class="purchase-handle"></div>
+
+      <div class="purchase-dob-preview">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Tu vas recevoir</div>
+        <div class="purchase-dob-amount">
+          <span id="modal-dob-amount">0</span>
+          <svg width="40" height="40" viewBox="0 0 24 24">
+            <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+            <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:6px;">
+          Prix : <span id="modal-price">0</span> FCFA
+        </div>
+      </div>
+
+      <div class="gift-message" id="modal-gift-msg">
+        🎁 Le paiement est en cours de maintenance.<br>
+        Ces DOB sont un cadeau de Damundjé pour toi !
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" id="btn-confirm-purchase"
+              onclick="confirmPurchase()">
+        Recevoir gratuitement
+      </button>
+
+      <button class="btn btn-ghost btn-full" style="margin-top:10px;"
+              onclick="closePurchaseModal()">
+        Annuler
+      </button>
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+
+    if (!Auth.requireAuth()) { /* redirige */ }
+
+    // Symbole DOB SVG inline réutilisable
+    const DOB_SVG = (size = 20) => `
+      <svg width="${size}" height="${size}" viewBox="0 0 24 24">
+        <rect width="24" height="24" rx="12" fill="#0a0a0a"/>
+        <circle cx="12" cy="12" r="7" fill="none" stroke="white" stroke-width="2"/>
+        <circle cx="12" cy="12" r="4" fill="none" stroke="white" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="2" fill="none" stroke="white" stroke-width="1"/>
+      </svg>`;
+
+    let selectedPackage = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBalance();
+      loadPackages();
+    });
+
+    // ══════════════════════════════════════════
+    //  SOLDE + HISTORIQUE
+    // ══════════════════════════════════════════
+    async function loadBalance() {
+      try {
+        const data = await API.get('/api/dob/balance');
+        document.getElementById('balance-display').textContent = data.balance;
+        renderHistory(data.history);
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+
+    function renderHistory(history) {
+      const list = document.getElementById('history-list');
+      if (!history.length) {
+        list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:14px;">
+          Aucune transaction pour l'instant</div>`;
+        return;
+      }
+
+      const reasonLabel = {
+        'signup_bonus':          '🎁 Bonus de bienvenue',
+        'bonus_profile_complete':'✅ Profil complété',
+        'listing_publish':       '📦 Publication annonce',
+        'refund':                '↩️ Remboursement',
+      };
+
+      list.innerHTML = history.map(t => {
+        const isCredit = t.amount > 0;
+        const label    = Object.entries(reasonLabel).find(([k]) =>
+          t.reason.startsWith(k))?.[1] || t.reason;
+
+        return `
+          <div class="history-item">
+            <div class="history-icon ${isCredit ? 'credit' : 'debit'}">
+              ${isCredit ? '⬆️' : '⬇️'}
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">${label}</div>
+              <div style="font-size:12px;color:var(--text-muted);">
+                ${Format.date(t.created_at)}
+              </div>
+            </div>
+            <div class="history-amount ${isCredit ? 'credit' : 'debit'}">
+              ${isCredit ? '+' : ''}${t.amount}
+              ${DOB_SVG(18)}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ══════════════════════════════════════════
+    //  PACKS
+    // ══════════════════════════════════════════
+    async function loadPackages() {
+      try {
+        const packages = await API.get('/api/dob/packages');
+        const grid = document.getElementById('pack-grid');
+
+        grid.innerHTML = packages.map(pkg => {
+          const isFree    = pkg.is_free_now;
+          const isAvail   = pkg.is_available;
+          const cardClass = !isAvail ? 'unavailable' : (isFree ? 'free-now available' : 'available');
+          const badge     = isFree
+            ? '<div class="free-badge">GRATUIT</div>'
+            : (!isAvail ? '<div class="soon-badge">BIENTÔT</div>' : '');
+
+          return `
+            <div class="pack-card ${cardClass}"
+                 onclick="${isAvail ? `openPurchaseModal(${pkg.id}, ${pkg.dob_amount}, ${pkg.price_fcfa}, ${isFree})` : `unavailableToast()`}">
+              ${badge}
+              <div class="pack-dob">
+                ${pkg.dob_amount}
+                ${DOB_SVG(28)}
+              </div>
+              <div class="pack-label">DOB</div>
+              <div class="pack-price">
+                ${isFree ? '🎁 Gratuit' : pkg.price_fcfa.toLocaleString('fr-FR') + ' FCFA'}
+              </div>
+            </div>`;
+        }).join('');
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+
+    function unavailableToast() {
+      Toast.warning("Cette offre n'est pas encore disponible. Essaie 7 DOB ou 20 DOB 🎁");
+    }
+
+    // ══════════════════════════════════════════
+    //  MODAL ACHAT
+    // ══════════════════════════════════════════
+    function openPurchaseModal(id, dobAmount, priceFcfa, isFree) {
+      selectedPackage = { id, dobAmount, priceFcfa, isFree };
+
+      document.getElementById('modal-dob-amount').textContent = dobAmount;
+      document.getElementById('modal-price').textContent      =
+        priceFcfa.toLocaleString('fr-FR');
+
+      document.getElementById('modal-gift-msg').style.display = isFree ? 'block' : 'none';
+      document.getElementById('btn-confirm-purchase').textContent =
+        isFree ? '🎁 Recevoir gratuitement' : `Payer ${priceFcfa.toLocaleString('fr-FR')} FCFA`;
+
+      document.getElementById('purchase-overlay').classList.add('open');
+    }
+
+    function closePurchaseModal() {
+      document.getElementById('purchase-overlay').classList.remove('open');
+      selectedPackage = null;
+    }
+
+    function handlePurchaseOverlay(e) {
+      if (e.target === document.getElementById('purchase-overlay')) closePurchaseModal();
+    }
+
+    async function confirmPurchase() {
+      if (!selectedPackage) return;
+
+      const btn = document.getElementById('btn-confirm-purchase');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Traitement...';
+
+      try {
+        const data = await API.post(`/api/dob/purchase/${selectedPackage.id}`);
+        Toast.success(data.message);
+        document.getElementById('balance-display').textContent = data.balance;
+        closePurchaseModal();
+        loadBalance(); // Recharge l'historique
+
+      } catch (err) {
+        Toast.error(err.message);
+        btn.disabled = false;
+        btn.innerHTML = selectedPackage.isFree
+          ? '🎁 Recevoir gratuitement'
+          : `Payer ${selectedPackage.priceFcfa.toLocaleString('fr-FR')} FCFA`;
+      }
+    }
+
+  </script>
+</body>
+</html>

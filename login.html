@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — Damundjé</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background: var(--bg-base);
+    }
+
+    .auth-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      padding: 36px 28px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .auth-logo-text {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .auth-logo-text span { color: var(--whatsapp); }
+
+    .auth-tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .step-desc strong { color: var(--text-primary); font-weight: 700; }
+
+    .wa-notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: var(--radius-md);
+      padding: 11px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #15803d;
+      margin-bottom: 22px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .wa-notice { background:#052e16; border-color:#166534; color:#4ade80; }
+    }
+
+    /* ── Sélecteur pays ──────────────── */
+    .phone-field {
+      display: flex;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: visible;
+      background: var(--bg-input);
+      transition: border-color 0.2s;
+      position: relative;
+    }
+
+    .phone-field:focus-within {
+      border-color: var(--border-focus);
+      background: var(--bg-surface);
+    }
+
+    .country-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      background: none;
+      border: none;
+      border-right: 1.5px solid var(--border);
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      border-radius: var(--radius-md) 0 0 var(--radius-md);
+      height: 50px;
+      min-width: 90px;
+      transition: background 0.15s;
+    }
+
+    .country-trigger:hover { background: var(--bg-hover); }
+    .country-trigger .flag { font-size: 20px; }
+    .country-trigger .dialcode { font-size: 14px; font-weight: 700; }
+    .country-trigger .arrow { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+    .country-trigger.open .arrow { transform: rotate(180deg); }
+
+    .phone-input {
+      flex: 1;
+      height: 50px;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0 14px;
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--text-primary);
+      min-width: 0;
+    }
+    .phone-input::placeholder { color: var(--text-muted); font-size: 14px; }
+
+    .country-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      z-index: 300;
+      overflow: hidden;
+      display: none;
+      min-width: 280px;
+    }
+    .country-dropdown.open { display: block; }
+
+    .country-search {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+
+    .country-search input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1.5px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+    }
+    .country-search input:focus { border-color: var(--border-focus); }
+    .country-search input::placeholder { color: var(--text-muted); }
+
+    .country-list { max-height: 240px; overflow-y: auto; overscroll-behavior: contain; }
+
+    .country-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: background 0.12s;
+      font-size: 14px;
+    }
+    .country-item:hover { background: var(--bg-hover); }
+    .country-item.selected { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .country-item .flag { font-size: 20px; flex-shrink: 0; }
+    .country-item .name { flex: 1; font-weight: 500; }
+    .country-item .code { color: var(--text-muted); font-size: 13px; font-weight: 600; }
+    .country-item.selected .code { color: var(--primary); }
+    .country-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+    /* ── OTP ─────────────────────────── */
+    .otp-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 6px 0 20px;
+    }
+
+    .otp-box {
+      flex: 1;
+      max-width: 52px;
+      height: 58px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+      caret-color: transparent;
+      -webkit-appearance: none;
+    }
+    .otp-box:focus  { border-color: var(--primary); background: var(--bg-surface); }
+    .otp-box.filled { border-color: var(--primary); color: var(--primary); }
+    .otp-box.error  { border-color: var(--danger) !important; }
+
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--danger);
+      margin-bottom: 16px;
+      display: none;
+      text-align: center;
+    }
+    @media (prefers-color-scheme: dark) {
+      .alert-error { background: #450a0a; border-color: #7f1d1d; }
+    }
+
+    .resend-row {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 14px;
+    }
+    .resend-btn {
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 0;
+      display: none;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      margin-top: 14px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+    .back-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+    .dev-banner {
+      background: #fefce8;
+      border: 1.5px dashed #fbbf24;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #92400e;
+      display: none;
+    }
+    .dev-banner strong { display: block; font-size: 12px; margin-bottom: 4px; }
+    .dev-code {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: #d97706;
+      text-align: center;
+      margin-top: 4px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dev-banner { background: #1c1400; border-color: #b45309; color: #fcd34d; }
+      .dev-code { color: #fbbf24; }
+    }
+
+    /* ══════════════════════════════════
+       BANNIÈRE "PAYS NON DISPONIBLE"
+    ══════════════════════════════════ */
+    .country-unavailable {
+      display: none;
+      background: #fff7ed;
+      border: 1.5px solid #fed7aa;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #c2410c;
+      font-weight: 600;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .country-unavailable.visible { display: flex; }
+    .country-unavailable .ua-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .country-unavailable .ua-text { flex: 1; line-height: 1.5; }
+    .btn-learn-more {
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .country-unavailable { background: #1c0f00; border-color: #92400e; color: #fdba74; }
+    }
+
+    /* ══════════════════════════════════
+       MODAL TERMINAL (en savoir plus)
+    ══════════════════════════════════ */
+    .terminal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 500;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+      animation: overlayIn 0.2s ease;
+    }
+
+    .terminal-overlay.open {
+      display: flex;
+    }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .terminal-modal {
+      background: #0a0a0a;
+      border: 1.5px solid #3b1f6e;
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 520px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      animation: terminalUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 -8px 40px rgba(100, 40, 200, 0.3);
+    }
+
+    @keyframes terminalUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* Barre titre du terminal */
+    .terminal-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid #1a1a2e;
+      flex-shrink: 0;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red    { background: #ff5f57; }
+    .terminal-dot.yellow { background: #febc2e; }
+    .terminal-dot.green  { background: #28c840; }
+
+    .terminal-title {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 12px;
+      color: #6b6b8a;
+      letter-spacing: 0.5px;
+    }
+
+    .terminal-close {
+      background: none;
+      border: none;
+      color: #444;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .terminal-close:hover { color: #888; }
+
+    /* Zone de texte du terminal */
+    .terminal-body {
+      padding: 20px 20px 28px;
+      overflow-y: auto;
+      flex: 1;
+      scroll-behavior: smooth;
+    }
+
+    .terminal-prompt {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 12px;
+      color: #4a4a6a;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-prompt .prompt-symbol {
+      color: #7c3aed;
+      font-weight: 700;
+    }
+
+    /* Texte principal — violet, typewriter */
+    .terminal-text {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 13.5px;
+      color: #a855f7;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 20px;
+    }
+
+    /* Curseur clignotant */
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #a855f7;
+      vertical-align: middle;
+      animation: blink 0.8s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Signature finale */
+    .terminal-footer {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid #1a1a2e;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 11px;
+      color: #3b1f6e;
+      display: none;
+    }
+
+    .terminal-footer .footer-line { color: #6d28d9; margin-bottom: 2px; }
+    .terminal-footer .footer-url  { color: #7c3aed; text-decoration: underline; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       CARTE DE CONNEXION
+  ══════════════════════════════════════ -->
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="auth-logo-text">Damundjé<span>.</span></div>
+      <div class="auth-tagline">Achète et vends près de chez toi</div>
+    </div>
+
+    <!-- ── ÉTAPE 1 : Numéro ── -->
+    <div class="step active" id="step-phone">
+
+      <div class="wa-notice">
+        📲 Un code de vérification sera envoyé sur WhatsApp
+      </div>
+
+      <div class="step-title">Connexion</div>
+      <div class="step-desc">Entre ton numéro WhatsApp pour continuer</div>
+
+      <div class="form-group">
+        <label class="form-label">Numéro WhatsApp</label>
+
+        <div class="phone-field" id="phone-field">
+          <button type="button" class="country-trigger" id="country-trigger" onclick="toggleDropdown()">
+            <span class="flag" id="selected-flag">🇳🇪</span>
+            <span class="dialcode" id="selected-dialcode">+227</span>
+            <span class="arrow">▼</span>
+          </button>
+
+          <div class="country-dropdown" id="country-dropdown">
+            <div class="country-search">
+              <input
+                type="text"
+                id="country-search-input"
+                placeholder="Rechercher un pays..."
+                oninput="filterCountries(this.value)"
+                autocomplete="off"
+              >
+            </div>
+            <div class="country-list" id="country-list"></div>
+          </div>
+
+          <input
+            type="tel"
+            class="phone-input"
+            id="phone-input"
+            placeholder="90 90 12 12"
+            inputmode="numeric"
+            maxlength="8"
+            autocomplete="tel-national"
+          >
+        </div>
+
+        <!-- Bannière pays non disponible -->
+        <div class="country-unavailable" id="country-unavailable">
+          <span class="ua-icon">🌍</span>
+          <div class="ua-text">
+            Damundjé n'est pas encore disponible dans ce pays.
+            <br>
+            <button class="btn-learn-more" onclick="openTerminalModal()">En savoir plus →</button>
+          </div>
+        </div>
+
+        <div class="form-hint" id="phone-hint" style="margin-top:8px;">
+          Le numéro doit être actif sur WhatsApp
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" id="btn-send">
+        Recevoir le code
+      </button>
+
+    </div>
+
+    <!-- ── ÉTAPE 2 : Instruction WhatsApp ── -->
+    <div class="step" id="step-whatsapp">
+
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:52px;margin-bottom:12px;animation:bounce 1.5s infinite;">📲</div>
+        <div class="step-title">Ouvre WhatsApp</div>
+        <div class="step-desc">
+          Envoie le message suivant à notre numéro WhatsApp pour recevoir ton code :
+        </div>
+      </div>
+
+      <!-- Numéro Damundjé WhatsApp -->
+      <div style="background:var(--bg-input);border:1.5px solid var(--border);
+                  border-radius:var(--radius-md);padding:16px;margin-bottom:16px;
+                  text-align:center;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">
+          Numéro WhatsApp Damundjé
+        </div>
+        <div style="font-size:20px;font-weight:800;color:var(--text-primary);
+                    letter-spacing:2px;" id="wa-business-number">
+          +227 XX XX XX XX
+        </div>
+      </div>
+
+      <!-- Message à envoyer -->
+      <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:var(--radius-md);
+                  padding:14px;margin-bottom:20px;text-align:center;cursor:pointer;"
+           onclick="copyWAMessage()">
+        <div style="font-size:12px;color:#15803d;font-weight:700;margin-bottom:6px;">
+          Message à envoyer (clique pour copier) :
+        </div>
+        <div style="font-size:18px;font-weight:800;color:#15803d;" id="wa-message-text">
+          Damundjé
+        </div>
+        <div style="font-size:11px;color:#15803d;margin-top:4px;">📋 Appuie pour copier</div>
+      </div>
+
+      <!-- Bouton ouvrir WhatsApp directement -->
+      <a class="btn btn-whatsapp btn-full btn-lg" id="btn-open-wa" href="#" target="_blank">
+        <span>📱</span> Ouvrir WhatsApp maintenant
+      </a>
+
+      <div style="text-align:center;margin:16px 0;font-size:13px;color:var(--text-muted);">
+        — ou —
+      </div>
+
+      <!-- J'ai déjà envoyé le message -->
+      <button class="btn btn-outline btn-full" onclick="confirmSentAndProceed()">
+        ✅ J'ai envoyé le message
+      </button>
+
+      <button class="back-btn" onclick="backToPhone()">← Changer de numéro</button>
+    </div>
+
+    <!-- ── ÉTAPE 3 : Code OTP ── -->
+    <div class="step" id="step-otp">
+
+      <div class="step-title">Vérifie WhatsApp 📲</div>
+      <div class="step-desc">
+        Code envoyé au <strong id="phone-display"></strong>
+      </div>
+
+      <div class="dev-banner" id="dev-banner">
+        <strong>⚙️ MODE DÉVELOPPEMENT — code visible ici</strong>
+        <div class="dev-code" id="dev-code-display"></div>
+      </div>
+
+      <div class="otp-row" id="otp-row">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1">
+      </div>
+
+      <div class="alert-error" id="otp-error"></div>
+
+      <button class="btn btn-primary btn-full btn-lg" id="btn-verify">
+        Confirmer
+      </button>
+
+      <div class="resend-row">
+        Code non reçu ?&nbsp;
+        <button class="resend-btn" id="resend-btn" onclick="resendCode()">Renvoyer</button>
+        <span id="countdown"></span>
+      </div>
+
+      <div id="countdown-wait-msg"
+           style="font-size:12px;color:var(--text-muted);text-align:center;
+                  margin-top:8px;line-height:1.5;display:none;">
+      </div>
+
+      <button class="back-btn" onclick="backToPhone()">← Changer de numéro</button>
+
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       MODAL TERMINAL "EN SAVOIR PLUS"
+  ══════════════════════════════════════ -->
+  <div class="terminal-overlay" id="terminal-overlay" onclick="handleOverlayClick(event)">
+    <div class="terminal-modal" id="terminal-modal">
+
+      <div class="terminal-titlebar">
+        <div class="terminal-dots">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+        </div>
+        <div class="terminal-title">damundje — expansion.sh</div>
+        <button class="terminal-close" onclick="closeTerminalModal()">✕</button>
+      </div>
+
+      <div class="terminal-body" id="terminal-body">
+        <div class="terminal-prompt">
+          <span class="prompt-symbol">▶</span>
+          <span>./expansion.sh --region=international</span>
+        </div>
+        <div class="terminal-text" id="terminal-text"></div>
+        <div class="terminal-footer" id="terminal-footer">
+          <div class="footer-line">──────────────────────────────────</div>
+          <div class="footer-line">© 2025 Damundjé · Made in Niger 🇳🇪</div>
+          <div class="footer-line">Contact : <span class="footer-url">contact@damundje.ne</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+
+    // ══════════════════════════════════════════
+    //  DONNÉES PAYS
+    // ══════════════════════════════════════════
+    const COUNTRIES = [
+      { flag:'🇳🇪', name:'Niger',         dial:'+227', len:8,  placeholder:'90 90 12 12',   available: true  },
+      { flag:'🇨🇲', name:'Cameroun',      dial:'+237', len:9,  placeholder:'6 00 00 00 00', available: false },
+      { flag:'🇳🇬', name:'Nigeria',       dial:'+234', len:10, placeholder:'801 234 5678',  available: false },
+      { flag:'🇸🇳', name:'Sénégal',       dial:'+221', len:9,  placeholder:'77 123 45 67',  available: false },
+      { flag:'🇨🇮', name:"Côte d'Ivoire", dial:'+225', len:10, placeholder:'07 12 34 56 78',available: false },
+      { flag:'🇬🇳', name:'Guinée',        dial:'+224', len:9,  placeholder:'621 23 45 67',  available: false },
+      { flag:'🇧🇯', name:'Bénin',         dial:'+229', len:8,  placeholder:'97 12 34 56',   available: false },
+      { flag:'🇧🇫', name:'Burkina Faso',  dial:'+226', len:8,  placeholder:'70 12 34 56',   available: false },
+      { flag:'🇲🇱', name:'Mali',          dial:'+223', len:8,  placeholder:'76 12 34 56',   available: false },
+      { flag:'🇹🇬', name:'Togo',          dial:'+228', len:8,  placeholder:'90 12 34 56',   available: false },
+      { flag:'🇬🇭', name:'Ghana',         dial:'+233', len:9,  placeholder:'24 123 4567',   available: false },
+      { flag:'🇬🇦', name:'Gabon',         dial:'+241', len:8,  placeholder:'06 12 34 56',   available: false },
+      { flag:'🇨🇬', name:'Congo',         dial:'+242', len:9,  placeholder:'06 123 4567',   available: false },
+      { flag:'🇲🇦', name:'Maroc',         dial:'+212', len:9,  placeholder:'6 12 34 56 78', available: false },
+      { flag:'🇩🇿', name:'Algérie',       dial:'+213', len:9,  placeholder:'551 23 45 67',  available: false },
+      { flag:'🇩🇪', name:'Allemagne',     dial:'+49',  len:11, placeholder:'1511 234 5678', available: false },
+      { flag:'🇨🇳', name:'Chine',         dial:'+86',  len:11, placeholder:'131 2345 6789', available: false },
+      { flag:'🇫🇷', name:'France',        dial:'+33',  len:9,  placeholder:'6 12 34 56 78', available: false },
+    ];
+
+    // ══════════════════════════════════════════
+    //  TEXTE DU TERMINAL — modifiable librement
+    // ══════════════════════════════════════════
+    const TERMINAL_MESSAGE =
+`Damundjé est née ici, au Niger.
+
+Pas dans une salle de réunion climatisée à des milliers de kilomètres.
+Pas dans la Silicon Valley.
+Ici. À Niamey. Avec la chaleur, la poussière, et l'ambition
+de construire quelque chose qui nous ressemble vraiment.
+
+Notre mission est simple :
+créer le premier marché numérique de confiance
+pensé par et pour les Nigériens.
+
+Aujourd'hui, nous concentrons toute notre énergie
+sur une seule chose — être excellents chez nous
+avant de grandir ailleurs.
+
+Chaque pays demande une adaptation :
+des partenaires locaux, des méthodes de paiement adaptées,
+une langue, une culture, une façon de négocier.
+Nous prenons le temps de faire les choses bien.
+
+L'expansion internationale n'est pas une question de "si".
+C'est une question de "quand on sera prêts".
+
+Et ce jour-là, tu seras parmi les premiers à le savoir.
+
+En attendant — si tu es Nigérien, bienvenue.
+Tu es exactement là où tu dois être.
+
+Si tu es ailleurs dans le monde, merci de ta curiosité.
+Reviens bientôt. Nous arrivons.`;
+
+    // ══════════════════════════════════════════
+    //  ÉTAT
+    // ══════════════════════════════════════════
+    if (Auth.isLoggedIn()) window.location.href = 'index.html';
+
+    let selectedCountry = COUNTRIES[0]; // Niger par défaut
+    let fullPhone       = '';
+    let countdownTimer  = null;
+    let typewriterTimer = null;
+
+    // ══════════════════════════════════════════
+    //  INITIALISATION
+    // ══════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCountryList(COUNTRIES);
+      updatePhoneField(selectedCountry);
+
+      document.addEventListener('click', e => {
+        if (!document.getElementById('phone-field').contains(e.target)) {
+          closeDropdown();
+        }
+      });
+
+      document.getElementById('phone-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendOTP();
+      });
+
+      document.getElementById('phone-input').addEventListener('input', e => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+      });
+    });
+
+    // ══════════════════════════════════════════
+    //  DROPDOWN PAYS
+    // ══════════════════════════════════════════
+    function toggleDropdown() {
+      const dropdown = document.getElementById('country-dropdown');
+      const trigger  = document.getElementById('country-trigger');
+      if (dropdown.classList.contains('open')) {
+        closeDropdown();
+      } else {
+        dropdown.classList.add('open');
+        trigger.classList.add('open');
+        setTimeout(() => document.getElementById('country-search-input').focus(), 50);
+      }
+    }
+
+    function closeDropdown() {
+      document.getElementById('country-dropdown').classList.remove('open');
+      document.getElementById('country-trigger').classList.remove('open');
+      document.getElementById('country-search-input').value = '';
+      renderCountryList(COUNTRIES);
+    }
+
+    function renderCountryList(list) {
+      const container = document.getElementById('country-list');
+      if (!list.length) {
+        container.innerHTML = '<div class="country-empty">Aucun pays trouvé</div>';
+        return;
+      }
+      container.innerHTML = list.map(c => `
+        <div class="country-item ${c.dial === selectedCountry.dial ? 'selected' : ''}"
+             onclick="selectCountry(${COUNTRIES.indexOf(c)})">
+          <span class="flag">${c.flag}</span>
+          <span class="name">${c.name}</span>
+          <span class="code">${c.dial}</span>
+        </div>
+      `).join('');
+    }
+
+    function filterCountries(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) { renderCountryList(COUNTRIES); return; }
+      renderCountryList(COUNTRIES.filter(c =>
+        c.name.toLowerCase().includes(q) || c.dial.includes(q)
+      ));
+    }
+
+    function selectCountry(index) {
+      selectedCountry = COUNTRIES[index];
+      updatePhoneField(selectedCountry);
+      closeDropdown();
+      document.getElementById('phone-input').focus();
+
+      // Afficher/masquer la bannière pays non disponible
+      const unavailable = document.getElementById('country-unavailable');
+      const btnSend     = document.getElementById('btn-send');
+      const hint        = document.getElementById('phone-hint');
+
+      if (!selectedCountry.available) {
+        unavailable.classList.add('visible');
+        btnSend.disabled = true;
+        hint.style.display = 'none';
+      } else {
+        unavailable.classList.remove('visible');
+        btnSend.disabled = false;
+        hint.style.display = 'block';
+      }
+    }
+
+    function updatePhoneField(country) {
+      document.getElementById('selected-flag').textContent     = country.flag;
+      document.getElementById('selected-dialcode').textContent = country.dial;
+      document.getElementById('phone-input').placeholder       = country.placeholder;
+      document.getElementById('phone-input').maxLength         = country.len;
+      document.getElementById('phone-input').value             = '';
+    }
+
+    // ══════════════════════════════════════════
+    //  MODAL TERMINAL
+    // ══════════════════════════════════════════
+    function openTerminalModal() {
+      document.getElementById('terminal-overlay').classList.add('open');
+      document.getElementById('terminal-text').textContent = '';
+      document.getElementById('terminal-footer').style.display = 'none';
+      startTypewriter();
+    }
+
+    function closeTerminalModal() {
+      document.getElementById('terminal-overlay').classList.remove('open');
+      clearTimeout(typewriterTimer);
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('terminal-overlay')) {
+        closeTerminalModal();
+      }
+    }
+
+    function startTypewriter() {
+      const el     = document.getElementById('terminal-text');
+      const body   = document.getElementById('terminal-body');
+      const text   = TERMINAL_MESSAGE;
+      let   i      = 0;
+
+      // Curseur
+      const cursor = document.createElement('span');
+      cursor.className = 'terminal-cursor';
+      el.appendChild(cursor);
+
+      // Vitesse : 18ms entre chaque caractère (~55 chars/sec)
+      const SPEED = 18;
+
+      function type() {
+        if (i < text.length) {
+          // Insère le caractère avant le curseur
+          el.insertBefore(document.createTextNode(text[i]), cursor);
+          i++;
+          // Défilement automatique vers le bas
+          body.scrollTop = body.scrollHeight;
+          typewriterTimer = setTimeout(type, SPEED);
+        } else {
+          // Fin — retire le curseur, affiche le footer
+          cursor.remove();
+          document.getElementById('terminal-footer').style.display = 'block';
+          body.scrollTop = body.scrollHeight;
+        }
+      }
+
+      type();
+    }
+
+    // ══════════════════════════════════════════
+    //  ENVOI OTP
+    // ══════════════════════════════════════════
+    document.getElementById('btn-send').addEventListener('click', sendOTP);
+
+    async function sendOTP() {
+      if (!selectedCountry.available) {
+        Toast.error('Damundjé n\'est pas encore disponible dans ce pays');
+        return;
+      }
+
+      const number = document.getElementById('phone-input').value.trim();
+
+      if (!number) {
+        shakeField();
+        Toast.error('Entre ton numéro de téléphone');
+        return;
+      }
+
+      if (number.length !== selectedCountry.len) {
+        shakeField();
+        Toast.error(`Ce numéro doit contenir exactement ${selectedCountry.len} chiffres`);
+        return;
+      }
+
+      fullPhone = selectedCountry.dial + number;
+
+      const btn = document.getElementById('btn-send');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Envoi en cours...';
+
+      try {
+        const data = await API.post('/api/auth/request-otp', { phone: fullPhone });
+
+        if (data.dev_code) {
+          console.log(
+            '%c🔐 CODE OTP (DEV) : ' + data.dev_code,
+            'font-size:22px;font-weight:bold;color:#d97706;background:#fefce8;padding:8px 16px;border-radius:8px;'
+          );
+          showDevBanner(data.dev_code);
+        }
+
+        document.getElementById('phone-display').textContent = fullPhone;
+
+        const otpMode = data.otp_mode || 'mock';
+
+        if (otpMode === 'mock') {
+          // Mode développement : code déjà affiché ci-dessus, saisie directe
+          goToStep('step-otp');
+          startCountdown(120);
+          document.querySelector('.otp-box').focus();
+
+        } else {
+          // Mode WhatsApp : instruction d'envoi de message d'abord
+          const waPhone = '22780806572'; // ← ton vrai numéro WhatsApp Business
+          const waMsg   = encodeURIComponent('Damundjé');
+          document.getElementById('btn-open-wa').href =
+            `https://wa.me/${waPhone}?text=${waMsg}`;
+          document.getElementById('wa-business-number').textContent =
+            '+' + waPhone.match(/.{1,3}/g).join(' ');
+
+          goToStep('step-whatsapp');
+        }
+
+      } catch (err) {
+        Toast.error(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Recevoir le code';
+      }
+    }
+
+    function showDevBanner(code) {
+      const banner = document.getElementById('dev-banner');
+      document.getElementById('dev-code-display').textContent = code;
+      banner.style.display = 'block';
+    }
+
+    // ══════════════════════════════════════════
+    //  SAISIE OTP
+    // ══════════════════════════════════════════
+    const otpBoxes = document.querySelectorAll('.otp-box');
+
+    otpBoxes.forEach((box, i) => {
+      box.addEventListener('input', () => {
+        box.value = box.value.replace(/\D/g, '');
+        if (box.value) {
+          box.classList.add('filled');
+          if (i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+        } else {
+          box.classList.remove('filled');
+        }
+        const code = getOTPCode();
+        if (code.length === 6) verifyOTP(code);
+      });
+
+      box.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !box.value && i > 0) {
+          otpBoxes[i - 1].value = '';
+          otpBoxes[i - 1].classList.remove('filled');
+          otpBoxes[i - 1].focus();
+        }
+      });
+
+      box.addEventListener('paste', e => {
+        const pasted = (e.clipboardData || window.clipboardData)
+          .getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pasted.length === 6) {
+          otpBoxes.forEach((b, idx) => {
+            b.value = pasted[idx] || '';
+            b.classList.toggle('filled', !!b.value);
+          });
+          verifyOTP(pasted);
+        }
+        e.preventDefault();
+      });
+    });
+
+    document.getElementById('btn-verify').addEventListener('click', () => {
+      const code = getOTPCode();
+      if (code.length < 6) { Toast.warning('Entre les 6 chiffres du code'); return; }
+      verifyOTP(code);
+    });
+
+    function getOTPCode() {
+      return [...otpBoxes].map(b => b.value).join('');
+    }
+
+    async function verifyOTP(code) {
+      const btn = document.getElementById('btn-verify');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Vérification...';
+      hideError();
+
+      try {
+        const data = await API.post('/api/auth/verify-otp', { phone: fullPhone, code });
+
+        Auth.setSession(data.token, {
+          id: data.user_id, name: data.name, phone: fullPhone
+        });
+
+        Toast.success(data.is_new_user ? 'Bienvenue sur Damundjé ! 🎉' : 'Connexion réussie !');
+        setTimeout(() => window.location.href = 'index.html', 900);
+
+      } catch (err) {
+        showError(err.message);
+        otpBoxes.forEach(b => {
+          b.value = '';
+          b.classList.remove('filled');
+          b.classList.add('error');
+          setTimeout(() => b.classList.remove('error'), 600);
+        });
+        otpBoxes[0].focus();
+        btn.disabled = false;
+        btn.innerHTML = 'Confirmer';
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  MINUTEUR
+    // ══════════════════════════════════════════
+    function startCountdown(seconds) {
+      clearInterval(countdownTimer);
+      document.getElementById('resend-btn').style.display = 'none';
+      let t = seconds;
+
+      updateCountdownText(t);
+
+      countdownTimer = setInterval(() => {
+        t--;
+        updateCountdownText(t);
+        if (t <= 0) {
+          clearInterval(countdownTimer);
+          document.getElementById('resend-btn').style.display = 'inline';
+          document.getElementById('countdown-wait-msg').style.display = 'none';
+        }
+      }, 1000);
+    }
+
+    function updateCountdownText(t) {
+      const countdownEl = document.getElementById('countdown');
+      const waitMsgEl   = document.getElementById('countdown-wait-msg');
+
+      if (t > 0) {
+        countdownEl.textContent = `(${t}s)`;
+        waitMsgEl.textContent =
+          `Recevoir un message sur WhatsApp peut prendre un peu de temps. Redemande un nouveau code dans ${t}s`;
+        waitMsgEl.style.display = 'block';
+      } else {
+        countdownEl.textContent = '';
+        waitMsgEl.style.display = 'none';
+      }
+    }
+
+    async function resendCode() {
+      try {
+        const data = await API.post('/api/auth/request-otp', { phone: fullPhone });
+        if (data.dev_code) {
+          console.log('%c🔐 NOUVEAU CODE : ' + data.dev_code,
+            'font-size:22px;font-weight:bold;color:#d97706;background:#fefce8;padding:8px 16px;border-radius:8px;');
+          showDevBanner(data.dev_code);
+        }
+        startCountdown(120);
+        hideError();
+        Toast.success('Nouveau code envoyé !');
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  UTILITAIRES
+    // ══════════════════════════════════════════
+    function confirmSentAndProceed() {
+      goToStep('step-otp');
+      startCountdown(120);
+      document.querySelector('.otp-box').focus();
+    }
+
+    function copyWAMessage() {
+      const txt = document.getElementById('wa-message-text').textContent.trim();
+      navigator.clipboard.writeText(txt).then(() => {
+        Toast.success('Message copié ! Colle-le sur WhatsApp 📋');
+      }).catch(() => {
+        Toast.warning('Copie manuelle : ' + txt);
+      });
+    }
+    
+    function goToStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    
+
+    function backToPhone() {
+      clearInterval(countdownTimer);
+      otpBoxes.forEach(b => { b.value=''; b.classList.remove('filled','error'); });
+      document.getElementById('dev-banner').style.display = 'none';
+      hideError();
+      goToStep('step-phone');
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('otp-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('otp-error').style.display = 'none';
+    }
+
+    function shakeField() {
+      const f = document.getElementById('phone-field');
+      f.style.animation = 'none';
+      f.offsetHeight;
+      f.style.animation = 'shake 0.4s ease';
+    }
+
+  </script>
+</body>
+</html>

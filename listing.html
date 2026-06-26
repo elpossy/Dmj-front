@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annonce — Damundjé</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+
+    body { background: var(--bg-base); }
+
+    /* ── En-tête flottant ──────────────── */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(0,0,0,0);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .top-bar.scrolled {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-bar-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.15s;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-bar.scrolled .top-bar-btn {
+      background: var(--bg-input);
+      box-shadow: none;
+    }
+
+    .top-bar-actions { display: flex; gap: 8px; }
+
+    /* ── Galerie photos ────────────────── */
+    .photo-gallery {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--bg-input);
+      overflow: hidden;
+    }
+
+    .gallery-slides {
+      display: flex;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-slide {
+      min-width: 100%;
+      height: 100%;
+    }
+
+    .gallery-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .gallery-no-photo {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 48px;
+      gap: 8px;
+    }
+
+    .gallery-no-photo span { font-size: 14px; }
+
+    /* Flèches navigation galerie */
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(4px);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+
+    .gallery-arrow:hover { opacity: 0.8; }
+    .gallery-arrow.left  { left: 12px; }
+    .gallery-arrow.right { right: 12px; }
+    .gallery-arrow.hidden { display: none; }
+
+    /* Pastilles navigation */
+    .gallery-dots {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+
+    .gallery-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.2s;
+    }
+
+    .gallery-dot.active {
+      background: #fff;
+      width: 20px;
+      border-radius: 4px;
+    }
+
+    /* Compteur photos */
+    .gallery-counter {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    /* ── Contenu ───────────────────────── */
+    .content { padding: 18px 16px; }
+
+    .listing-price {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .listing-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .listing-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .meta-item .icon { font-size: 14px; }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    /* Description */
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .description-text {
+      font-size: 15px;
+      color: var(--text-primary);
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .description-text.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .btn-show-more {
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      padding: 8px 0 0;
+    }
+
+    /* ── Carte vendeur ─────────────────── */
+    .seller-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .seller-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .seller-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .seller-avatar img { width:100%;height:100%;object-fit:cover; }
+
+    .seller-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .seller-stats {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .seller-rating {
+      color: #f59e0b;
+      font-size: 13px;
+      margin-right: 4px;
+    }
+
+    /* ── Barre d'actions bas ───────────── */
+    .action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+      z-index: 80;
+    }
+
+    .btn-favorite-action {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .btn-favorite-action:hover { border-color: var(--danger); }
+    .btn-favorite-action.active { background: #fee2e2; border-color: var(--danger); }
+
+    /* Bouton WhatsApp (principal) */
+    .btn-whatsapp-contact {
+      flex: 1;
+      height: 50px;
+      background: var(--whatsapp);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-whatsapp-contact:hover { background: var(--whatsapp-dark); }
+
+    .btn-share {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .btn-share:hover { background: var(--bg-hover); }
+
+    /* ── Annonces similaires ───────────── */
+    .similar-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .similar-scroll::-webkit-scrollbar { display: none; }
+    .similar-scroll .listing-card { flex-shrink: 0; width: 150px; }
+
+    /* ── Skeleton ──────────────────────── */
+    .skeleton { background: linear-gradient(90deg,var(--bg-input) 25%,var(--bg-hover) 50%,var(--bg-input) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:var(--radius-sm); }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── Actions propriétaire ──────────── */
+    .owner-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* ── Badge VENDU ───────────────────── */
+    .sold-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sold-badge {
+      background: var(--danger);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      padding: 10px 28px;
+      border-radius: var(--radius-xl);
+      transform: rotate(-8deg);
+      letter-spacing: 1px;
+    }
+
+  </style>
+</head>
+<body style="padding-bottom: 80px;">
+
+  <!-- ══════════════════════════════════════
+       BARRE SUPÉRIEURE FLOTTANTE
+  ══════════════════════════════════════ -->
+  <div class="top-bar" id="top-bar">
+    <button class="top-bar-btn" onclick="history.back()">←</button>
+    <div class="top-bar-actions">
+      <button class="top-bar-btn" id="btn-top-fav" onclick="toggleFavorite()" title="Favori">🤍</button>
+      <button class="top-bar-btn" onclick="shareListing()" title="Partager">↗️</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       GALERIE PHOTOS
+  ══════════════════════════════════════ -->
+  <div class="photo-gallery" id="photo-gallery">
+    <!-- Rempli par JS -->
+    <div class="gallery-no-photo">
+      <span>📦</span>
+      <span>Chargement...</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CONTENU ANNONCE
+  ══════════════════════════════════════ -->
+  <div class="content" id="listing-content" style="display:none;">
+
+    <!-- Prix + titre -->
+    <div class="listing-price" id="listing-price"></div>
+    <div class="listing-title" id="listing-title"></div>
+
+    <!-- Métadonnées -->
+    <div class="listing-meta-row" id="listing-meta"></div>
+
+    <div class="divider"></div>
+
+    <!-- Description -->
+    <div id="description-section" style="display:none;">
+      <div class="section-label">Description</div>
+      <div class="description-text collapsed" id="description-text"></div>
+      <button class="btn-show-more" id="btn-show-more" onclick="toggleDescription()" style="display:none;">
+        Voir plus ▼
+      </button>
+      <div class="divider"></div>
+    </div>
+
+    <!-- Vendeur -->
+    <div class="section-label">Vendeur</div>
+    <div class="seller-section" id="seller-section">
+      <!-- Rempli par JS -->
+    </div>
+
+    <!-- Actions propriétaire (visible seulement si c'est mon annonce) -->
+    <div id="owner-panel" style="display:none;">
+      <div class="divider"></div>
+      <div class="section-label">Gérer mon annonce</div>
+      <div class="owner-actions">
+        <a href="#" id="btn-edit" class="btn btn-outline" style="flex:1;">✏️ Modifier</a>
+        <button class="btn btn-danger" style="flex:1;" onclick="confirmDelete()">🗑️ Supprimer</button>
+      </div>
+      <div style="margin-top:8px;">
+        <button class="btn btn-ghost btn-full" id="btn-mark-sold" onclick="markAsSold()">
+          ✅ Marquer comme vendu
+        </button>
+      </div>
+    </div>
+
+    <!-- Annonces similaires -->
+    <div id="similar-section" style="display:none; margin-top: 8px;">
+      <div class="divider"></div>
+      <div class="section-label" style="margin-bottom:12px;">Tu pourrais aussi aimer</div>
+      <div class="similar-scroll" id="similar-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       BARRE D'ACTIONS BAS
+  ══════════════════════════════════════ -->
+  <div class="action-bar" id="action-bar" style="display:none;">
+    <button class="btn-favorite-action" id="btn-fav" onclick="toggleFavorite()" title="Favori">
+      🤍
+    </button>
+    <button class="btn-whatsapp-contact" id="btn-dmj-chat" onclick="startDMJChat()"
+            style="background:var(--primary);flex:1.5;">
+      <span>💬</span> Envoyer un message
+    </button>
+    <a class="btn-whatsapp-contact" id="btn-whatsapp" href="#" target="_blank"
+       style="flex:0.6;font-size:12px;padding:0 10px;background:var(--whatsapp);">
+      <span>📱</span> WhatsApp
+    </a>
+    <button class="btn-share" onclick="shareListing()" title="Partager">↗️</button>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+
+    // ══════════════════════════════════════════
+    //  INITIALISATION
+    // ══════════════════════════════════════════
+    const params    = new URLSearchParams(window.location.search);
+    const listingId = params.get('id');
+    const currentUser = Auth.getUser();
+
+    let listing     = null;
+    let seller      = null;
+    let isFavorited = false;
+    let currentPhoto = 0;
+
+    if (!listingId) window.location.href = 'index.html';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadListing();
+      setupScrollEffect();
+    });
+
+    // ══════════════════════════════════════════
+    //  CHARGEMENT
+    // ══════════════════════════════════════════
+    async function loadListing() {
+      try {
+        listing = await API.get(`/api/listings/${listingId}`);
+        document.title = `${listing.title} — Damundjé`;
+
+        renderGallery(listing.photos || []);
+        renderContent(listing);
+        renderActionBar(listing);
+        loadSeller(listing.seller_id);
+        loadSimilar(listing.category_id);
+
+        // Enregistre la vue pour le ML
+        if (Auth.isLoggedIn()) {
+          trackEvent(listing.id, 'view');
+        }
+
+      } catch (err) {
+        document.getElementById('photo-gallery').innerHTML = `
+          <div class="gallery-no-photo">
+            <span>⚠️</span>
+            <span>${err.message}</span>
+          </div>`;
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  GALERIE
+    // ══════════════════════════════════════════
+    function renderGallery(photos) {
+      const gallery = document.getElementById('photo-gallery');
+
+      if (!photos.length) {
+        gallery.innerHTML = `
+          <div class="gallery-no-photo">
+            <span>📦</span>
+            <span>Pas de photos</span>
+          </div>`;
+        return;
+      }
+
+      // Overlay VENDU si applicable
+      const soldOverlay = listing.status === 'sold'
+        ? `<div class="sold-overlay"><div class="sold-badge">VENDU</div></div>`
+        : '';
+
+      gallery.innerHTML = `
+        ${soldOverlay}
+        <div class="gallery-slides" id="gallery-slides">
+          ${photos.map(url => `
+            <div class="gallery-slide">
+              <img src="${url}" alt="${listing.title}" loading="lazy">
+            </div>
+          `).join('')}
+        </div>
+        ${photos.length > 1 ? `
+          <button class="gallery-arrow left hidden" id="arrow-left" onclick="slideGallery(-1)">‹</button>
+          <button class="gallery-arrow right" id="arrow-right" onclick="slideGallery(1)">›</button>
+          <div class="gallery-dots" id="gallery-dots">
+            ${photos.map((_,i) => `<div class="gallery-dot ${i===0?'active':''}"></div>`).join('')}
+          </div>
+          <div class="gallery-counter" id="gallery-counter">1 / ${photos.length}</div>
+        ` : ''}
+      `;
+    }
+
+    function slideGallery(dir) {
+      const photos = listing.photos;
+      currentPhoto = Math.max(0, Math.min(photos.length - 1, currentPhoto + dir));
+
+      document.getElementById('gallery-slides').style.transform =
+        `translateX(-${currentPhoto * 100}%)`;
+
+      // Dots
+      document.querySelectorAll('.gallery-dot').forEach((d,i) =>
+        d.classList.toggle('active', i === currentPhoto));
+
+      // Compteur
+      document.getElementById('gallery-counter').textContent =
+        `${currentPhoto + 1} / ${photos.length}`;
+
+      // Flèches
+      document.getElementById('arrow-left').classList.toggle('hidden', currentPhoto === 0);
+      document.getElementById('arrow-right').classList.toggle('hidden', currentPhoto === photos.length - 1);
+    }
+
+    // Swipe tactile
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+    document.addEventListener('touchend', e => {
+      if (!listing?.photos?.length) return;
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) slideGallery(diff > 0 ? 1 : -1);
+    });
+
+    // ══════════════════════════════════════════
+    //  CONTENU
+    // ══════════════════════════════════════════
+    function renderContent(l) {
+      document.getElementById('listing-price').textContent =
+        Format.price(l.price, l.currency) +
+        (l.is_negotiable ? ' · Négociable' : '');
+
+      document.getElementById('listing-title').textContent = l.title;
+
+      // Métadonnées
+      const metas = [];
+      if (l.city) metas.push(`<div class="meta-item"><span class="icon">📍</span>${l.city}</div>`);
+      metas.push(`<div class="meta-item"><span class="icon">🕐</span>${Format.date(l.created_at)}</div>`);
+      metas.push(`<div class="meta-item"><span class="icon">👁️</span>${l.views} vues</div>`);
+
+      const condMap = { new:'✨ Neuf', like_new:'👍 Comme neuf', good:'🙂 Bon état', used:'👌 Usagé', damaged:'🔧 À réparer' };
+      if (l.condition) metas.push(`<span class="badge badge-${l.condition.replace('_','-')}">${condMap[l.condition]||l.condition}</span>`);
+      if (l.is_negotiable) metas.push(`<span class="badge badge-negotiable">Négociable</span>`);
+
+      document.getElementById('listing-meta').innerHTML = metas.join('');
+
+      // Description
+      if (l.description) {
+        document.getElementById('description-section').style.display = 'block';
+        document.getElementById('description-text').textContent = l.description;
+        // Bouton "voir plus" si texte long
+        setTimeout(() => {
+          const el = document.getElementById('description-text');
+          if (el.scrollHeight > el.clientHeight + 2) {
+            document.getElementById('btn-show-more').style.display = 'block';
+          }
+        }, 100);
+      }
+
+      // Panneau propriétaire
+      if (currentUser && currentUser.id === l.seller_id) {
+        document.getElementById('owner-panel').style.display = 'block';
+        document.getElementById('btn-edit').href = `create.html?edit=${l.id}`;
+        if (l.status === 'sold') {
+          document.getElementById('btn-mark-sold').style.display = 'none';
+        }
+      }
+
+      document.getElementById('listing-content').style.display = 'block';
+    }
+
+    function toggleDescription() {
+      const el  = document.getElementById('description-text');
+      const btn = document.getElementById('btn-show-more');
+      const expanded = !el.classList.contains('collapsed');
+      el.classList.toggle('collapsed', expanded);
+      btn.textContent = expanded ? 'Voir plus ▼' : 'Voir moins ▲';
+    }
+
+    // ══════════════════════════════════════════
+    //  BARRE D'ACTIONS
+    // ══════════════════════════════════════════
+    function renderActionBar(l) {
+      const bar = document.getElementById('action-bar');
+
+      // Si c'est mon annonce → on n'affiche pas "contacter"
+      if (currentUser && currentUser.id === l.seller_id) {
+        bar.style.display = 'none';
+        return;
+      }
+
+      // Lien WhatsApp avec message pré-rempli
+      const message = encodeURIComponent(
+        `Bonjour, je suis intéressé(e) par ton annonce sur Damundjé : "${l.title}" à ${Format.price(l.price, l.currency)}. Est-ce encore disponible ?`
+      );
+
+      bar.style.display = 'flex';
+
+      // On aura le numéro du vendeur via le profil (chargé après)
+      document.getElementById('btn-whatsapp').dataset.message = message;
+
+      // Enregistre le contact pour le ML
+      document.getElementById('btn-whatsapp').addEventListener('click', () => {
+        if (Auth.isLoggedIn()) trackEvent(l.id, 'contact');
+      });
+    }
+
+    // ══════════════════════════════════════════
+    //  VENDEUR
+    // ══════════════════════════════════════════
+    async function loadSeller(sellerId) {
+      try {
+        seller = await API.get(`/api/users/${sellerId}`);
+
+        const stars  = Format.stars(seller.rating_avg || 0);
+        const avatar = seller.avatar_url
+          ? `<img src="${seller.avatar_url}" alt="${seller.name}">`
+          : '👤';
+
+        document.getElementById('seller-section').innerHTML = `
+          <div class="seller-top">
+            <div class="seller-avatar">${avatar}</div>
+            <div style="flex:1;">
+              <div class="seller-name">
+                ${seller.name || 'Vendeur'}
+                ${seller.is_verified ? '<span style="color:var(--primary);font-size:13px;"> ✓ Vérifié</span>' : ''}
+              </div>
+              <div class="seller-stats">
+                <span class="seller-rating">${stars}</span>
+                ${seller.rating_avg ? seller.rating_avg.toFixed(1) : '—'}
+                (${seller.rating_count} avis)
+                ${seller.city ? ` · 📍 ${seller.city}` : ''}
+              </div>
+              <div class="seller-stats" style="margin-top:2px;">
+                Membre depuis ${Format.date(seller.created_at)}
+              </div>
+            </div>
+            <a href="profile.html?id=${seller.id}" class="btn btn-ghost btn-sm">
+              Voir le profil
+            </a>
+          </div>
+        `;
+
+        // Met à jour le lien WhatsApp avec le vrai numéro du vendeur
+        const phone   = seller.phone?.replace(/^\+/, '') || '';
+        const message = document.getElementById('btn-whatsapp')?.dataset.message || '';
+        const waUrl   = `https://wa.me/${phone}?text=${message}`;
+        const btnWa   = document.getElementById('btn-whatsapp');
+        if (btnWa) btnWa.href = waUrl;
+
+      } catch {
+        document.getElementById('seller-section').innerHTML = `
+          <div style="color:var(--text-muted);font-size:14px;padding:8px 0;">
+            Informations vendeur indisponibles
+          </div>`;
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  ANNONCES SIMILAIRES
+    // ══════════════════════════════════════════
+    async function loadSimilar(categoryId) {
+      if (!categoryId) return;
+      try {
+        const data = await API.get(
+          `/api/listings/?category_id=${categoryId}&limit=8`
+        );
+        const filtered = data.filter(l => l.id !== parseInt(listingId));
+        if (!filtered.length) return;
+
+        document.getElementById('similar-section').style.display = 'block';
+        document.getElementById('similar-grid').innerHTML =
+          filtered.map(l => renderListingCard(l)).join('');
+      } catch { /* silencieux */ }
+    }
+
+    // ══════════════════════════════════════════
+    //  FAVORI
+    // ══════════════════════════════════════════
+    async function toggleFavorite() {
+      if (!Auth.isLoggedIn()) {
+        Toast.warning('Connecte-toi pour ajouter aux favoris');
+        return;
+      }
+
+      try {
+        const data = await API.post(`/api/listings/${listingId}/favorite`);
+        isFavorited = data.favorited;
+
+        const heart = isFavorited ? '❤️' : '🤍';
+        document.getElementById('btn-fav').textContent = heart;
+        document.getElementById('btn-top-fav').textContent = heart;
+        document.getElementById('btn-fav').classList.toggle('active', isFavorited);
+
+        Toast.success(data.message);
+
+        if (Auth.isLoggedIn()) trackEvent(listing.id, 'favorite');
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  ACTIONS PROPRIÉTAIRE
+    // ══════════════════════════════════════════
+    async function confirmDelete() {
+      if (!confirm('Supprimer cette annonce définitivement ?')) return;
+      try {
+        await API.delete(`/api/listings/${listingId}`);
+        Toast.success('Annonce supprimée');
+        setTimeout(() => window.location.href = 'index.html', 800);
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+
+    async function markAsSold() {
+      try {
+        await API.uploadPatch(`/api/listings/${listingId}`,
+          (() => { const f = new FormData(); f.append('status','sold'); return f; })()
+        );
+        Toast.success('Annonce marquée comme vendue ✅');
+        setTimeout(() => location.reload(), 800);
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+    // ══════════════════════════════════════════
+    //  DÉMARRER UNE CONVERSATION DMJ-CHAT
+    // ══════════════════════════════════════════
+    async function startDMJChat() {
+      if (!Auth.isLoggedIn()) {
+        Toast.warning('Connecte-toi pour envoyer un message');
+        setTimeout(() => window.location.href = 'login.html', 800);
+        return;
+      }
+      try {
+        const data = await API.post(`/api/conversations/start?listing_id=${listingId}`);
+        window.location.href = `chat.html?id=${data.conversation_id}`;
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    }
+    // ══════════════════════════════════════════
+    //  PARTAGE
+    // ══════════════════════════════════════════
+    async function shareListing() {
+      const shareData = {
+        title: listing?.title || 'Annonce Damundjé',
+        text:  `Regarde cette annonce sur Damundjé : ${listing?.title}`,
+        url:   window.location.href
+      };
+
+      if (navigator.share) {
+        try { await navigator.share(shareData); } catch { /* annulé */ }
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        Toast.success('Lien copié dans le presse-papier !');
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  EFFET SCROLL SUR LA TOPBAR
+    // ══════════════════════════════════════════
+    function setupScrollEffect() {
+      window.addEventListener('scroll', () => {
+        const bar = document.getElementById('top-bar');
+        bar.classList.toggle('scrolled', window.scrollY > 200);
+      });
+    }
+
+  </script>
+</body>
+</html>

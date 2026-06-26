@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<link rel="icon" type="image/svg+xml" href="assets/logo-damundje.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Publier une annonce — Damundjé</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+
+    .page-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .page-header-title {
+      font-size: 17px;
+      font-weight: 800;
+      flex: 1;
+    }
+
+    .form-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .form-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Upload photos ─────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-input);
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .upload-zone .upload-icon { font-size: 36px; margin-bottom: 8px; }
+
+    .upload-zone p {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .upload-zone span { font-size: 12px; color: var(--text-muted); }
+
+    .upload-zone input[type="file"] { display: none; }
+
+    /* Grille previews */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Badge "Principale" sur la 1ère photo */
+    .preview-item:first-child::after {
+      content: 'Principale';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(37,99,235,0.85);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      text-align: center;
+      padding: 3px 0;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 24px;
+      height: 24px;
+      background: rgba(220,38,38,0.9);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* Ajouter plus */
+    .preview-add {
+      aspect-ratio: 1;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .preview-add:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* ── Sélecteur condition ─────────────── */
+    .condition-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .condition-option {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      background: var(--bg-input);
+    }
+
+    .condition-option .cond-icon { font-size: 20px; margin-bottom: 4px; }
+
+    .condition-option .cond-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: block;
+    }
+
+    .condition-option:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .condition-option.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .condition-option.selected .cond-label { color: var(--primary); }
+
+    /* ── Prix ────────────────────────────── */
+    .price-field {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-input);
+      transition: border-color 0.2s;
+    }
+
+    .price-field:focus-within {
+      border-color: var(--border-focus);
+      background: var(--bg-surface);
+    }
+
+    .price-currency {
+      padding: 0 14px;
+      background: none;
+      border: none;
+      border-right: 1.5px solid var(--border);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      height: 50px;
+    }
+
+    .price-input {
+      flex: 1;
+      height: 50px;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0 14px;
+      font-family: var(--font);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .price-input::placeholder { font-size: 15px; font-weight: 400; color: var(--text-muted); }
+
+    /* ── Toggle négociable ───────────────── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 14px;
+    }
+
+    .toggle-row-label { font-size: 14px; font-weight: 600; }
+    .toggle-row-desc  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { display: none; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-track { background: var(--primary); }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+    /* ── Barre d'actions sticky en bas ───── */
+    .submit-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .submit-bar .btn { flex: 1; }
+
+    /* ── Compteur caractères ─────────────── */
+    .char-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .char-count.warn { color: var(--warning); }
+    .char-count.over { color: var(--danger); }
+
+    /* ── Progrès de complétion ───────────── */
+    .completion-bar {
+      background: var(--bg-input);
+      border-radius: 4px;
+      height: 4px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .completion-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .completion-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .completion-label span { font-weight: 700; color: var(--primary); }
+
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       EN-TÊTE
+  ══════════════════════════════════════ -->
+  <div class="page-header">
+    <button class="btn-icon" onclick="history.back()" title="Retour">←</button>
+    <div class="page-header-title">Publier une annonce</div>
+  </div>
+
+  <div style="padding: 16px 16px 0;">
+
+    <!-- Barre de progression -->
+    <div class="completion-label">
+      Complétion de l'annonce <span id="completion-pct">0%</span>
+    </div>
+    <div class="completion-bar">
+      <div class="completion-fill" id="completion-fill" style="width:0%"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       FORMULAIRE
+  ══════════════════════════════════════ -->
+  <div style="padding: 0 16px 120px;">
+
+    <!-- ── PHOTOS ──────────────────────── -->
+    <div class="form-card">
+      <div class="form-card-title">📸 Photos</div>
+
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/webp">
+        <div class="upload-icon">📷</div>
+        <p>Ajouter des photos</p>
+        <span>Photos (10 Mo max) et vidéos (50 Mo max) acceptées</span>
+      </div>
+
+      <div class="preview-grid" id="preview-grid" style="display:none;"></div>
+
+      <div class="form-hint" style="margin-top:10px;">
+        💡 La première photo sera la photo principale de ton annonce
+      </div>
+    </div>
+
+    <!-- ── INFORMATIONS ────────────────── -->
+    <div class="form-card">
+      <div class="form-card-title">📝 Informations</div>
+
+      <div class="form-group">
+        <label class="form-label">Titre de l'annonce *</label>
+        <input
+          type="text"
+          class="form-input"
+          id="title"
+          placeholder="Ex : iPhone 13 Pro Max 256 Go"
+          maxlength="80"
+        >
+        <div class="char-count" id="title-count">0 / 80</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Catégorie *</label>
+        <select class="form-select" id="category">
+          <option value="">— Choisir une catégorie —</option>
+          <option value="1">📱 Électronique</option>
+          <option value="2">👕 Vêtements & Mode</option>
+          <option value="3">🏠 Maison & Jardin</option>
+          <option value="4">🚗 Véhicules</option>
+          <option value="5">🏘️ Immobilier</option>
+          <option value="6">💼 Emploi & Services</option>
+          <option value="7">🥘 Alimentation</option>
+          <option value="8">⚽ Sport & Loisirs</option>
+          <option value="9">💊 Santé & Beauté</option>
+          <option value="10">🐾 Animaux</option>
+          <option value="11">📚 Livres & Formation</option>
+          <option value="12">📦 Autre</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea
+          class="form-textarea"
+          id="description"
+          placeholder="Décris ton article : état, caractéristiques, raison de la vente..."
+          maxlength="1000"
+          rows="4"
+        ></textarea>
+        <div class="char-count" id="desc-count">0 / 1000</div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Ville</label>
+        <input
+          type="text"
+          class="form-input"
+          id="city"
+          placeholder="Ex : Niamey, Agadez..."
+        >
+      </div>
+    </div>
+
+    <!-- ── ÉTAT DE L'ARTICLE ───────────── -->
+    <div class="form-card">
+      <div class="form-card-title">🏷️ État de l'article</div>
+
+      <div class="condition-grid" id="condition-grid">
+        <div class="condition-option selected" data-value="new" onclick="selectCondition(this)">
+          <div class="cond-icon">✨</div>
+          <span class="cond-label">Neuf</span>
+        </div>
+        <div class="condition-option" data-value="like_new" onclick="selectCondition(this)">
+          <div class="cond-icon">👍</div>
+          <span class="cond-label">Comme neuf</span>
+        </div>
+        <div class="condition-option" data-value="good" onclick="selectCondition(this)">
+          <div class="cond-icon">🙂</div>
+          <span class="cond-label">Bon état</span>
+        </div>
+        <div class="condition-option" data-value="used" onclick="selectCondition(this)">
+          <div class="cond-icon">👌</div>
+          <span class="cond-label">Usagé</span>
+        </div>
+        <div class="condition-option" data-value="damaged" onclick="selectCondition(this)">
+          <div class="cond-icon">🔧</div>
+          <span class="cond-label">À réparer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRIX ────────────────────────── -->
+    <div class="form-card">
+      <div class="form-card-title">💰 Prix</div>
+
+      <div class="price-field">
+        <select class="price-currency" id="currency">
+          <option value="XOF">XOF</option>
+          <option value="XAF">XAF</option>
+          <option value="MAD">MAD</option>
+          <option value="DZD">DZD</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="GHS">GHS</option>
+          <option value="NGN">NGN</option>
+          <option value="CNY">CNY</option>
+        </select>
+        <input
+          type="number"
+          class="price-input"
+          id="price"
+          placeholder="0"
+          min="0"
+          step="any"
+          inputmode="decimal"
+        >
+      </div>
+
+      <!-- Toggle négociable -->
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-row-label">Prix négociable</div>
+          <div class="toggle-row-desc">Les acheteurs pourront proposer un autre prix</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="is-negotiable">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       BARRE D'ACTION STICKY
+  ══════════════════════════════════════ -->
+  <div class="submit-bar">
+    <button class="btn btn-ghost" onclick="saveDraft()">
+      Brouillon
+    </button>
+    <button class="btn btn-primary btn-lg" id="btn-publish" onclick="publishListing()">
+      Publier l'annonce
+    </button>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script>
+
+    // ══════════════════════════════════════════
+    //  PROTECTION — doit être connecté
+    // ══════════════════════════════════════════
+    if (!Auth.requireAuth()) { /* redirige vers login */ }
+
+    // ══════════════════════════════════════════
+    //  ÉTAT
+    // ══════════════════════════════════════════
+    const state = {
+      photos:    [],   // { file: File, url: string (preview local) }
+      condition: 'new'
+    };
+
+    // ══════════════════════════════════════════
+    //  PHOTOS — UPLOAD & PREVIEW
+    // ══════════════════════════════════════════
+    const fileInput   = document.getElementById('file-input');
+    const uploadZone  = document.getElementById('upload-zone');
+    const previewGrid = document.getElementById('preview-grid');
+
+    // Clic sur la zone
+    fileInput.addEventListener('change', e => addPhotos(e.target.files));
+
+    // Drag & drop
+    uploadZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      addPhotos(e.dataTransfer.files);
+    });
+
+    const MAX_FILES = 20; // garde-fou technique, pas une limite commerciale
+
+    function addPhotos(files) {
+      const remaining = MAX_FILES - state.photos.length;
+      if (remaining <= 0) {
+        Toast.warning(`Maximum ${MAX_FILES} fichiers par annonce`);
+        return;
+      }
+
+      const toAdd = Array.from(files).slice(0, remaining);
+      const imageTypes = ['image/jpeg','image/png','image/webp'];
+      const videoTypes  = ['video/mp4','video/quicktime','video/webm'];
+
+      toAdd.forEach(file => {
+        const isImage = imageTypes.includes(file.type);
+        const isVideo = videoTypes.includes(file.type);
+
+        if (!isImage && !isVideo) {
+          Toast.error(`Format non accepté : ${file.name}`);
+          return;
+        }
+        if (isImage && file.size > 10 * 1024 * 1024) {
+          Toast.error(`${file.name} dépasse 10 Mo`);
+          return;
+        }
+        if (isVideo && file.size > 50 * 1024 * 1024) {
+          Toast.error(`${file.name} dépasse 50 Mo`);
+          return;
+        }
+
+        const url = URL.createObjectURL(file);
+        state.photos.push({ file, url, isVideo });
+      });
+
+      renderPreviews();
+      updateCompletion();
+      updateDobCostPreview();
+    }
+
+    function renderPreviews() {
+      if (state.photos.length === 0) {
+        previewGrid.style.display = 'none';
+        return;
+      }
+
+      previewGrid.style.display = 'grid';
+
+      previewGrid.innerHTML = state.photos.map((p, i) => `
+        <div class="preview-item">
+          <img src="${p.url}" alt="Photo ${i+1}">
+          <button class="preview-remove" onclick="removePhoto(${i})">✕</button>
+        </div>
+      `).join('');
+
+      // Bouton "ajouter plus" si moins de 5 photos
+      if (state.photos.length < 5) {
+        previewGrid.insertAdjacentHTML('beforeend', `
+          <div class="preview-add" onclick="document.getElementById('file-input').click()">＋</div>
+        `);
+      }
+    }
+    
+    updateDobCostPreview();
+
+    function removePhoto(index) {
+      URL.revokeObjectURL(state.photos[index].url);
+      state.photos.splice(index, 1);
+      renderPreviews();
+      updateCompletion();
+    }
+
+    // ══════════════════════════════════════════
+    //  CONDITION
+    // ══════════════════════════════════════════
+    function selectCondition(el) {
+      document.querySelectorAll('.condition-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      state.condition = el.dataset.value;
+    }
+
+    // ══════════════════════════════════════════
+    //  COMPTEURS DE CARACTÈRES
+    // ══════════════════════════════════════════
+    document.getElementById('title').addEventListener('input', function() {
+      const n = this.value.length;
+      const el = document.getElementById('title-count');
+      el.textContent = `${n} / 80`;
+      el.className = 'char-count' + (n > 70 ? (n === 80 ? ' over' : ' warn') : '');
+      updateCompletion();
+    });
+
+    document.getElementById('description').addEventListener('input', function() {
+      const n = this.value.length;
+      const el = document.getElementById('desc-count');
+      el.textContent = `${n} / 1000`;
+      el.className = 'char-count' + (n > 900 ? (n === 1000 ? ' over' : ' warn') : '');
+      updateCompletion();
+    });
+
+    document.getElementById('price').addEventListener('input', updateCompletion);
+    document.getElementById('category').addEventListener('change', updateCompletion);
+    document.getElementById('city').addEventListener('input', updateCompletion);
+    
+  // ══════════════════════════════════════════
+    //  APERÇU DU COÛT DOB
+    // ══════════════════════════════════════════
+    async function updateDobCostPreview() {
+      const photoCount = state.photos.filter(p => !p.isVideo).length;
+      const videoCount  = state.photos.filter(p => p.isVideo).length;
+
+      try {
+        const cost = await API.get(
+          `/api/dob/calculate?photo_count=${photoCount}&video_count=${videoCount}`
+        );
+
+        let badge = document.getElementById('dob-cost-badge');
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.id = 'dob-cost-badge';
+          badge.style.cssText =
+            'margin:12px 0;padding:10px 14px;border-radius:10px;font-size:13px;' +
+            'font-weight:700;display:flex;align-items:center;justify-content:space-between;';
+          document.getElementById('btn-publish').parentElement
+            .insertAdjacentElement('beforebegin', badge);
+        }
+
+        const ok = cost.can_afford;
+        badge.style.background = ok ? 'var(--primary-light)' : '#fee2e2';
+        badge.style.color      = ok ? 'var(--primary)' : 'var(--danger)';
+        badge.innerHTML = ok
+          ? `Coût de publication : <strong>${cost.total} DOB</strong> · Solde : ${cost.balance} DOB`
+          : `Solde insuffisant : il te faut ${cost.total} DOB, tu en as ${cost.balance}. <a href="dob_shop.html" style="text-decoration:underline;">Recharger</a>`;
+
+      } catch (err) {
+        // silencieux si non connecté
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  BARRE DE COMPLÉTION
+    // ══════════════════════════════════════════
+    function updateCompletion() {
+      let score = 0;
+      const total = 6;
+
+      if (state.photos.length > 0)                              score++;
+      if (document.getElementById('title').value.trim())        score++;
+      if (document.getElementById('category').value)            score++;
+      if (document.getElementById('description').value.trim())  score++;
+      if (document.getElementById('price').value > 0)           score++;
+      if (document.getElementById('city').value.trim())         score++;
+
+      const pct = Math.round((score / total) * 100);
+      document.getElementById('completion-fill').style.width = pct + '%';
+      document.getElementById('completion-pct').textContent  = pct + '%';
+    }
+
+    // ══════════════════════════════════════════
+    //  PUBLIER
+    // ══════════════════════════════════════════
+    async function publishListing() {
+      // ── Validation ──────────────────────
+      // ── Vérification du solde DOB avant envoi ─────
+      const photoCount = state.photos.filter(p => !p.isVideo).length;
+      const videoCount  = state.photos.filter(p => p.isVideo).length;
+      try {
+        const cost = await API.get(
+          `/api/dob/calculate?photo_count=${photoCount}&video_count=${videoCount}`
+        );
+        if (!cost.can_afford) {
+          Toast.error(`Solde DOB insuffisant. Il te manque ${cost.missing} DOB.`);
+          return;
+        }
+      } catch { /* on laisse le backend trancher si l'appel échoue */ }
+      const title    = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const price    = parseFloat(document.getElementById('price').value);
+
+      if (!title) {
+        Toast.error('Le titre est obligatoire');
+        document.getElementById('title').focus();
+        return;
+      }
+
+      if (!category) {
+        Toast.error('Choisis une catégorie');
+        document.getElementById('category').focus();
+        return;
+      }
+
+      if (!price || price <= 0) {
+        Toast.error('Entre un prix valide');
+        document.getElementById('price').focus();
+        return;
+      }
+
+      // ── Construction du FormData ─────────
+      // On utilise FormData car on envoie des fichiers + texte ensemble
+      const formData = new FormData();
+      formData.append('title',         title);
+      formData.append('category_id',   category);
+      formData.append('price',         price);
+      formData.append('currency',      document.getElementById('currency').value);
+      formData.append('condition',     state.condition);
+      formData.append('is_negotiable', document.getElementById('is-negotiable').checked);
+      formData.append('description',   document.getElementById('description').value.trim());
+      formData.append('city',          document.getElementById('city').value.trim());
+
+      // Ajoute chaque photo au FormData
+      state.photos.forEach(p => formData.append('photos', p.file));
+
+      // ── Envoi ────────────────────────────
+      const btn = document.getElementById('btn-publish');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Publication...';
+
+      try {
+        const listing = await API.upload('/api/listings/', formData);
+        Toast.success('Annonce publiée avec succès ! 🎉');
+
+        // Redirige vers la page de l'annonce
+        setTimeout(() => {
+          window.location.href = `listing.html?id=${listing.id}`;
+        }, 800);
+
+      } catch (err) {
+        Toast.error(err.message);
+        btn.disabled = false;
+        btn.innerHTML = 'Publier l\'annonce';
+      }
+    }
+
+    // ══════════════════════════════════════════
+    //  BROUILLON (localStorage)
+    // ══════════════════════════════════════════
+    function saveDraft() {
+      const draft = {
+        title:       document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        category:    document.getElementById('category').value,
+        price:       document.getElementById('price').value,
+        currency:    document.getElementById('currency').value,
+        city:        document.getElementById('city').value,
+        condition:   state.condition,
+      };
+      localStorage.setItem('dmj_draft', JSON.stringify(draft));
+      Toast.success('Brouillon sauvegardé');
+    }
+
+    function loadDraft() {
+      const raw = localStorage.getItem('dmj_draft');
+      if (!raw) return;
+      try {
+        const draft = JSON.parse(raw);
+        if (draft.title)       document.getElementById('title').value       = draft.title;
+        if (draft.description) document.getElementById('description').value = draft.description;
+        if (draft.category)    document.getElementById('category').value    = draft.category;
+        if (draft.price)       document.getElementById('price').value       = draft.price;
+        if (draft.currency)    document.getElementById('currency').value    = draft.currency;
+        if (draft.city)        document.getElementById('city').value        = draft.city;
+        if (draft.condition) {
+          const el = document.querySelector(`.condition-option[data-value="${draft.condition}"]`);
+          if (el) selectCondition(el);
+        }
+        updateCompletion();
+
+        // Mise à jour des compteurs
+        const titleLen = draft.title?.length || 0;
+        const descLen  = draft.description?.length || 0;
+        document.getElementById('title-count').textContent = `${titleLen} / 80`;
+        document.getElementById('desc-count').textContent  = `${descLen} / 1000`;
+
+        Toast.warning('Brouillon restauré');
+      } catch { /* ignoré */ }
+    }
+
+    // Charge le brouillon au démarrage si disponible
+    loadDraft();
+
+  </script>
+</body>
+</html>
